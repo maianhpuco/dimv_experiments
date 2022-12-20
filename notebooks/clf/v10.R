@@ -1,13 +1,13 @@
-## ----setup, include = FALSE------------------------------------------------------------------------------------------------------------------------
+## ----setup, include = FALSE---------------------------------------------------------------------------------------------------------
 knitr::opts_chunk$set(cache = TRUE, echo=TRUE, eval = TRUE)
 
 
-## --------------------------------------------------------------------------------------------------------------------------------------------------
+## -----------------------------------------------------------------------------------------------------------------------------------
 require(knitr)
 purl("v10.Rmd", output = 'v10.R')
 
 
-## --------------------------------------------------------------------------------------------------------------------------------------------------
+## -----------------------------------------------------------------------------------------------------------------------------------
 packages <- c(
   "missMDA", 
   "softImpute", 
@@ -18,7 +18,8 @@ packages <- c(
   "future.apply", 
   "dslabs", 
   "cowplot", 
-  "magick"
+  "magick", 
+  "progress"
 )
 # Install packages not yet installed
 installed_packages <- packages %in% rownames(installed.packages())
@@ -32,7 +33,7 @@ invisible(lapply(packages, library, character.only = TRUE))
 plan(multisession, workers = 8)  
 
 
-## ---- message = FALSE------------------------------------------------------------------------------------------------------------------------------
+## ---- message = FALSE---------------------------------------------------------------------------------------------------------------
 # require(missMDA)
 # require(softImpute)
 # require(mice)
@@ -51,7 +52,11 @@ plan(multisession, workers = 8)
 # require(dslabs)  
 
 
-## --------------------------------------------------------------------------------------------------------------------------------------------------
+## -----------------------------------------------------------------------------------------------------------------------------------
+
+
+
+## -----------------------------------------------------------------------------------------------------------------------------------
 
 
 #getting the path to save 
@@ -89,7 +94,7 @@ if (!file.exists(file.path(mnist_path, "train-images-idx3-ubyte")) |
   
 
 
-## --------------------------------------------------------------------------------------------------------------------------------------------------
+## -----------------------------------------------------------------------------------------------------------------------------------
 # load image files
 load_image_file = function(filename) {
   ret = list()
@@ -115,7 +120,7 @@ load_label_file = function(filename) {
 
 
 
-## --------------------------------------------------------------------------------------------------------------------------------------------------
+## -----------------------------------------------------------------------------------------------------------------------------------
 # load images
 processing_mnist_data <- function (){
   train = load_image_file(file.path(mnist_path, "train-images-idx3-ubyte"))
@@ -129,7 +134,7 @@ processing_mnist_data <- function (){
 }
 
 
-## --------------------------------------------------------------------------------------------------------------------------------------------------
+## -----------------------------------------------------------------------------------------------------------------------------------
 processed_data = processing_mnist_data()
 train = processed_data$train 
 test = processed_data$test
@@ -139,7 +144,7 @@ y.train = train[, 785, drop=F]
 y.test = test[, 785, drop=F] 
 
 
-## --------------------------------------------------------------------------------------------------------------------------------------------------
+## -----------------------------------------------------------------------------------------------------------------------------------
 find_cov_ij <- function(Xij, Sii, Sjj){
   # Xij: the i, j column of the original matrix
   # sii, sjj = \hat{Sigma}_{ii}, \hat{Sigma}_{jj}
@@ -208,75 +213,7 @@ dpers <- function(Xscaled){
 } 
 
 
-## --------------------------------------------------------------------------------------------------------------------------------------------------
-impDi_single_cols <- function(S, Xtest, threshold=0.5){
-  Xtest[is.na(Xtest)] <- NaN   
-  
-  Xpred_original = Xtest
-  
-  #------ edited
-  #not to apply the algorithm on the ZERO VARIANCE columns, just fill the with 0 / or mean value (which is also 0)
-  
-  non_zero_var = (which(diag(S)!=0)) 
-  length(non_zero_var)
-  
-  Xtest = Xpred_original[, non_zero_var, drop=F]
-  Xpred = Xpred_original[, non_zero_var, drop=F] 
-  S = S[non_zero_var, non_zero_var, drop=F]
-  
-  pool = 1: nrow(Xtest)
-  
-  pool = setdiff(pool, which(rowSums(is.na(Xtest)) == 0))
-  
-  while (length(pool)>0){
-  #------ edited
-    x = as.numeric(Xtest[pool[1], , drop=F])
-  #------  
-    oId = which(!is.nan(x))
-    mId = which(is.nan(x))  
-    
-    fiid = which(rowSums(is.nan(Xpred[,oId, drop=F]))==0)
-    XpredMask = matrix(0, dim(Xpred)[1], dim(Xpred)[2])
-    XpredMask[fiid, mId] = Xpred[fiid, mId, drop=F]
-    fid = which(rowSums(is.nan(XpredMask)) == length(mId))
-    
-    pool_mIds <- mId 
-    while (length(pool_mIds)>0){
-      m = pool_mIds[1]
-      valid_oId =  intersect(which(abs(S[, m]) >= threshold), oId) 
-      if (identical(valid_oId, integer(0))){
-        Smask = matrix(0, dim(S)[1], dim(S)[2])
-        Smask[oId, m] = S[oId, m, drop=F] 
-        valid_oId = which(rowSums(abs(Smask) == max(abs(Smask[-m, m])))>0)
-      }
-        
-      Smask = matrix(0, dim(S)[1], dim(S)[2])
-      Smask[valid_oId, pool_mIds] = S[valid_oId, pool_mIds, drop=F]
-      valid_mId = union(which(colSums(abs(Smask)>= threshold)==length(valid_oId)), m) 
-      
-      iid = which(rowSums(is.nan(Xpred[,valid_oId, drop=F]))==0)
-      XpredMask = matrix(0, dim(Xpred)[1], dim(Xpred)[2])
-      
-      XpredMask[iid, valid_mId] = Xpred[iid, valid_mId, drop=F]
-
-      id = which(rowSums(is.nan(XpredMask)) == length(valid_mId)) 
-      So = S[valid_oId, valid_oId]
-      Smo = S[valid_oId, valid_mId] 
-      beta = solve(So) %*% Smo
-      
-      Xpred[id, valid_mId] = t(beta) %*% t(Xtest[id, valid_oId])
-      pool_mIds <- setdiff(pool_mIds, valid_mId)
-    } 
-    pool = setdiff(pool, fid) 
-  }
-  Xpred_original[, non_zero_var] = Xpred
-  Xpred_original[is.nan(Xpred_original)]  =  0
-  
-  return(Xpred_original)
-} 
-
-
-## --------------------------------------------------------------------------------------------------------------------------------------------------
+## -----------------------------------------------------------------------------------------------------------------------------------
 impDi <- function(S, Xtest, threshold, nlargest=2){
   print(threshold)
   Xtest[is.na(Xtest)] <- NaN   
@@ -349,7 +286,7 @@ impDi <- function(S, Xtest, threshold, nlargest=2){
 }   
 
 
-## --------------------------------------------------------------------------------------------------------------------------------------------------
+## -----------------------------------------------------------------------------------------------------------------------------------
 visualize_digit <- function(missing_X, y, train_removed_rows, per_col, per_row, title){
   par(mfcol=c(per_col, per_row))
   par(mar=c(0, 0, 3, 0), xaxs='i', yaxs='i') 
@@ -362,7 +299,7 @@ visualize_digit <- function(missing_X, y, train_removed_rows, per_col, per_row, 
 } 
 
 
-## ---- message = FALSE------------------------------------------------------------------------------------------------------------------------------
+## ---- message = FALSE---------------------------------------------------------------------------------------------------------------
 impDi_run <- function(X.train, y.train, X.test, y.test, threshold){ 
   #a) on training set 
   X.train[is.na(X.train)] <- NaN
@@ -380,7 +317,7 @@ impDi_run <- function(X.train, y.train, X.test, y.test, threshold){
 }  
 
 
-## ---- message = FALSE------------------------------------------------------------------------------------------------------------------------------
+## ---- message = FALSE---------------------------------------------------------------------------------------------------------------
 softImpute_run <- function(X.train, y.train, X.test, y.test){
   #a) on training set
   fit_train = softImpute(as.matrix(X.train) , type = 'als') 
@@ -397,7 +334,7 @@ softImpute_run <- function(X.train, y.train, X.test, y.test){
 } 
 
 
-## --------------------------------------------------------------------------------------------------------------------------------------------------
+## -----------------------------------------------------------------------------------------------------------------------------------
 get_image_position_spatial_to_flatten<- function(delImgPosWidth, delImgPosHeight){ 
   # delImgPosHeight: row 
   # delImgPosWeight : col 
@@ -408,7 +345,7 @@ get_image_position_spatial_to_flatten<- function(delImgPosWidth, delImgPosHeight
 }
 
 
-## --------------------------------------------------------------------------------------------------------------------------------------------------
+## -----------------------------------------------------------------------------------------------------------------------------------
 image_edge_deleting <- function(
     data, 
     delete_type, #by_percent, by_pixel_number 
@@ -448,7 +385,7 @@ flatten_columns_removed = get_image_position_spatial_to_flatten(
 
 
 
-## --------------------------------------------------------------------------------------------------------------------------------------------------
+## -----------------------------------------------------------------------------------------------------------------------------------
 # visualize the deleted images 
 visualize_digit <- function(missing_X, y, train_removed_rows, per_col, per_row, title){
 
@@ -466,7 +403,7 @@ visualize_digit <- function(missing_X, y, train_removed_rows, per_col, per_row, 
 
 
 
-## --------------------------------------------------------------------------------------------------------------------------------------------------
+## -----------------------------------------------------------------------------------------------------------------------------------
 #data normalization
 sampling_data <- function(data, y_col_name, sample_perc){
   data$label= data[, y_col_name]
@@ -482,7 +419,7 @@ sampling_data <- function(data, y_col_name, sample_perc){
 
 
 
-## --------------------------------------------------------------------------------------------------------------------------------------------------
+## -----------------------------------------------------------------------------------------------------------------------------------
 normalizing <- function(x=None, Xtrain=None){
   na_mask = is.na(x)
   mean = apply(Xtrain, 2, mean, na.rm=TRUE)
@@ -506,7 +443,7 @@ reconstructingNormedMatrix <- function(X_norm, mean, std){
 } 
 
 
-## --------------------------------------------------------------------------------------------------------------------------------------------------
+## -----------------------------------------------------------------------------------------------------------------------------------
 mnistDataPreparation <- function(
     width_del_percent=None, 
     height_del_percent=None, 
@@ -567,7 +504,7 @@ mnistDataPreparation <- function(
 
 
 
-## --------------------------------------------------------------------------------------------------------------------------------------------------
+## -----------------------------------------------------------------------------------------------------------------------------------
 imputationPipeline<- function(
     width_del_percent=None, 
     height_del_percent=None, 
@@ -732,7 +669,7 @@ imputationPipeline<- function(
 } 
 
 
-## --------------------------------------------------------------------------------------------------------------------------------------------------
+## -----------------------------------------------------------------------------------------------------------------------------------
 width_height_percentages =c(0.4,0.6,0.8)
 sample_deleted_percentages = c(0.2, 0.5)
 correlation_threshold = c(0.3, 0.5)

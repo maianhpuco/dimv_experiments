@@ -1,0 +1,5 @@
+,softImpute,impDi,diff,file_name,Width_Height_Cut,Percent_of_cut_Image,Threshold_Correlation_DIMV
+0,0.8725,0.8749,0.0023999999999999577,threshold_50_deletedWidthHeightPc_4040_noImagePc_50,4040,50,50
+2,0.743,0.8315,0.08850000000000002,threshold_50_deletedWidthHeightPc_6060_noImagePc_50,6060,50,50
+6,0.8561,0.8767,0.020600000000000063,threshold_30_deletedWidthHeightPc_4040_noImagePc_50,4040,50,30
+8,0.7962,0.8217,0.025499999999999967,threshold_30_deletedWidthHeightPc_6060_noImagePc_50,6060,50,30

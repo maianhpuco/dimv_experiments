@@ -23,7 +23,7 @@ def svm_prediction(X_train, y_train, X_test, y_test, name, root, sub_folder):
     #model = linearSVC(dual = False, max_iter=5000)
 
     start_prediction = time.time()
-    model = SGDClassifier(loss = 'modified_huber', n_jobs=6, max_iter = 5000)
+    model = LinearSVC(dual=False, max_iter=10000)
     model.fit(X_train, y_train)
     print("done fit model for {} after {} (mins):".format(
         name, 
@@ -69,7 +69,7 @@ def svm_prediction_pipeline(root, sub_folder):
     impDi_Xtest_path = get_Xpath('test','impDi') 
     impDi_ytrain_path = get_ypath('train')
     impDi_ytest_path = get_ypath('test')
-
+#----------------
     start_reading = time.time()
     softImpute_Xtrain = pd.read_csv(softImpute_Xtrain_path).to_numpy()
     softImpute_ytrain = pd.read_csv(softImpute_ytrain_path)
@@ -86,24 +86,24 @@ def svm_prediction_pipeline(root, sub_folder):
     impDi_ytrain = impDi_ytrain.values.ravel()
     impDi_ytest = impDi_ytest.values.ravel()
 
-
+    print("data shape:", impDi_Xtrain.shape)
     
-   # start_reading = time.time()
-   # softImpute_Xtrain = pd.read_csv(softImpute_Xtrain_path).to_numpy()[:1000,]
-   # softImpute_ytrain = pd.read_csv(softImpute_ytrain_path)
-   # softImpute_Xtest = pd.read_csv(softImpute_Xtest_path).to_numpy()[:1000,]
-   # softImpute_ytest = pd.read_csv(softImpute_ytest_path)
-   # 
-   # impDi_Xtrain = pd.read_csv(impDi_Xtrain_path).to_numpy()[:1000,]
-   # impDi_ytrain = pd.read_csv(impDi_ytrain_path)
-   # impDi_Xtest = pd.read_csv(impDi_Xtest_path).to_numpy()[:1000,]
-   # impDi_ytest = pd.read_csv(impDi_ytest_path)
-
-   # softImpute_ytrain = softImpute_ytrain.values.ravel()[:1000, ]
-   # softImpute_ytest = softImpute_ytest.values.ravel()[:1000,]
-   # impDi_ytrain = impDi_ytrain.values.ravel()[:1000,]
-   # impDi_ytest = impDi_ytest.values.ravel()[:1000, ]
-    
+#    start_reading = time.time()
+#    softImpute_Xtrain = pd.read_csv(softImpute_Xtrain_path).to_numpy()[:1000,]
+#    softImpute_ytrain = pd.read_csv(softImpute_ytrain_path)
+#    softImpute_Xtest = pd.read_csv(softImpute_Xtest_path).to_numpy()[:1000,]
+#    softImpute_ytest = pd.read_csv(softImpute_ytest_path)
+#    
+#    impDi_Xtrain = pd.read_csv(impDi_Xtrain_path).to_numpy()[:1000,]
+#    impDi_ytrain = pd.read_csv(impDi_ytrain_path)
+#    impDi_Xtest = pd.read_csv(impDi_Xtest_path).to_numpy()[:1000,]
+#    impDi_ytest = pd.read_csv(impDi_ytest_path)
+#
+#    softImpute_ytrain = softImpute_ytrain.values.ravel()[:1000, ]
+#    softImpute_ytest = softImpute_ytest.values.ravel()[:1000,]
+#    impDi_ytrain = impDi_ytrain.values.ravel()[:1000,]
+#    impDi_ytest = impDi_ytest.values.ravel()[:1000, ]
+   
     print("complete reading data in subfoler {} \n  after: {} second".format(
         sub_folder, 
         time.time()-start_reading)
@@ -149,7 +149,7 @@ def svm_prediction_pipeline(root, sub_folder):
 if __name__ == '__main__':
     root = '../../data/mnist/'
     accuracies = {}
-    acc_path = '../../data/mnist/accuracy/v2_linear_svc.json'
+    acc_path = '../../data/mnist/accuracy/v3_linear_svc.json'
     sub_folders = os.listdir(os.path.join(root, 'imputed/'))
 
     experiment_done = os.listdir("../../data/mnist/accuracy/v1/")

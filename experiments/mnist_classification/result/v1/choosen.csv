@@ -1,5 +1,9 @@
 ,softImpute,impDi,diff,file_name,Width_Height_Cut,Percent_of_cut_Image,Threshold_Correlation_DIMV
-0,0.8725,0.8749,0.0023999999999999577,threshold_50_deletedWidthHeightPc_4040_noImagePc_50,4040,50,50
-2,0.743,0.8315,0.08850000000000002,threshold_50_deletedWidthHeightPc_6060_noImagePc_50,6060,50,50
-6,0.8561,0.8767,0.020600000000000063,threshold_30_deletedWidthHeightPc_4040_noImagePc_50,4040,50,30
-8,0.7962,0.8217,0.025499999999999967,threshold_30_deletedWidthHeightPc_6060_noImagePc_50,6060,50,30
+0,0.8245,0.8645,4.0000000000000036,threshold_50_deletedWidthHeightPc_5050_noImagePc_50,5050,50,50
+1,0.8415,0.8651,2.3599999999999954,threshold_30_deletedWidthHeightPc_5050_noImagePc_50,5050,50,30
+2,0.8456,0.8655,1.9900000000000029,threshold_20_deletedWidthHeightPc_5050_noImagePc_50,5050,50,20
+3,0.7762,0.8639,8.77,threshold_10_deletedWidthHeightPc_5050_noImagePc_50,5050,50,10
+5,0.7019,0.8257,12.380000000000003,threshold_50_deletedWidthHeightPc_6060_noImagePc_50,6060,50,50
+6,0.7936,0.8292,3.5600000000000076,threshold_20_deletedWidthHeightPc_6060_noImagePc_50,6060,50,20
+9,0.8036,0.8238,2.0199999999999996,threshold_30_deletedWidthHeightPc_6060_noImagePc_50,6060,50,30
+10,0.7969,0.8246,2.7699999999999947,threshold_10_deletedWidthHeightPc_6060_noImagePc_50,6060,50,10

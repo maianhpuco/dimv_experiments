@@ -1,0 +1,7 @@
+,Unnamed: 0,group,rmse_mean,rmse_sd,iteration_times
+0,5,missForest,0.4878,0.2245,1000
+1,2,imputePCA,0.557,0.2181,1000
+2,1,impDi,0.6118,0.247,1000
+3,6,softImpute,0.6779,0.304,1000
+4,4,mice,0.713,0.311,1000
+5,3,kNNimpute,0.8094,0.2941,1000

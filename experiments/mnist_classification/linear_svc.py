@@ -17,19 +17,11 @@ from sklearn.linear_model import SGDClassifier
 HYPERPARAMS = {'C': 5, 'gamma': 0.01}  
 
 def svm_prediction(X_train, y_train, X_test, y_test, name, root, sub_folder):
-    start = time.time()
-    #model = svm.SVC(**HYPERPARAMS)
-    #model.fit(X_train, y_train)
-    #model = linearSVC(dual = False, max_iter=5000)
-
     start_prediction = time.time()
-    model = LinearSVC(dual=False, max_iter=10000)
+    model = svm.SVC(**HYPERPARAMS)
     model.fit(X_train, y_train)
-    print("done fit model for {} after {} (mins):".format(
-        name, 
-        ((time.time()-start)/60) 
-        ))
-
+    #model = LinearSVC(dual=False, max_iter=10000)
+    #model.fit(X_train, y_train)
     y_pred = model.predict(X_test)
 
     #save output
@@ -86,24 +78,24 @@ def svm_prediction_pipeline(root, sub_folder):
     impDi_ytrain = impDi_ytrain.values.ravel()
     impDi_ytest = impDi_ytest.values.ravel()
 
-    print("data shape:", impDi_Xtrain.shape)
     
-#    start_reading = time.time()
-#    softImpute_Xtrain = pd.read_csv(softImpute_Xtrain_path).to_numpy()[:1000,]
-#    softImpute_ytrain = pd.read_csv(softImpute_ytrain_path)
-#    softImpute_Xtest = pd.read_csv(softImpute_Xtest_path).to_numpy()[:1000,]
-#    softImpute_ytest = pd.read_csv(softImpute_ytest_path)
-#    
-#    impDi_Xtrain = pd.read_csv(impDi_Xtrain_path).to_numpy()[:1000,]
-#    impDi_ytrain = pd.read_csv(impDi_ytrain_path)
-#    impDi_Xtest = pd.read_csv(impDi_Xtest_path).to_numpy()[:1000,]
-#    impDi_ytest = pd.read_csv(impDi_ytest_path)
-#
-#    softImpute_ytrain = softImpute_ytrain.values.ravel()[:1000, ]
-#    softImpute_ytest = softImpute_ytest.values.ravel()[:1000,]
-#    impDi_ytrain = impDi_ytrain.values.ravel()[:1000,]
-#    impDi_ytest = impDi_ytest.values.ravel()[:1000, ]
-   
+    #start_reading = time.time()
+    #softImpute_Xtrain = pd.read_csv(softImpute_Xtrain_path).to_numpy()[:1000,]
+    #softImpute_ytrain = pd.read_csv(softImpute_ytrain_path)
+    #softImpute_Xtest = pd.read_csv(softImpute_Xtest_path).to_numpy()[:1000,]
+    #softImpute_ytest = pd.read_csv(softImpute_ytest_path)
+    #
+    #impDi_Xtrain = pd.read_csv(impDi_Xtrain_path).to_numpy()[:1000,]
+    #impDi_ytrain = pd.read_csv(impDi_ytrain_path)
+    #impDi_Xtest = pd.read_csv(impDi_Xtest_path).to_numpy()[:1000,]
+    #impDi_ytest = pd.read_csv(impDi_ytest_path)
+
+    #softImpute_ytrain = softImpute_ytrain.values.ravel()[:1000, ]
+    #softImpute_ytest = softImpute_ytest.values.ravel()[:1000,]
+    #impDi_ytrain = impDi_ytrain.values.ravel()[:1000,]
+    #impDi_ytest = impDi_ytest.values.ravel()[:1000, ]
+    print("data shape:", impDi_Xtrain.shape)
+  
     print("complete reading data in subfoler {} \n  after: {} second".format(
         sub_folder, 
         time.time()-start_reading)

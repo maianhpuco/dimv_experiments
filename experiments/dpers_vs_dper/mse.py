@@ -7,7 +7,7 @@ def mse(a, b):
     return (np.square(a-b)).mean(axis=None)
 
 def calc_rmse(sub_folder, train_or_test):
-    root = '../../data/mnist/imputed/v11/'
+    root = '../../data/mnist/imputed/v11'
     
     get_Xpath = lambda train_test, algo: \
             os.path.join(root, sub_folder, '{}_{}_Xrecon.csv'.format(train_or_test, algo))

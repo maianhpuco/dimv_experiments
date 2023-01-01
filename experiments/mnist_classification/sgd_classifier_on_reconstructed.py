@@ -15,7 +15,7 @@ from sklearn.svm import LinearSVC
 from sklearn.linear_model import SGDClassifier
   
 HYPERPARAMS = {'C': 5, 'gamma': 0.01}  
-VERSION = 'v11'
+VERSION = 'v11_recon'
 def svm_prediction(X_train, y_train, X_test, y_test, name, root, sub_folder):
     start_prediction = time.time()
     model = SGDClassifier()
@@ -44,10 +44,10 @@ def svm_prediction(X_train, y_train, X_test, y_test, name, root, sub_folder):
     return acc  
 
 def svm_prediction_pipeline(root, sub_folder):
-    path = os.path.join(root+"imputed/", VERSION, sub_folder)
+    path = os.path.join(root, "imputed/", 'v11', sub_folder)
     print("start reading data at path", path)
 
-    get_Xpath = lambda train_test, algo: os.path.join(path, '{}_{}.csv'.format(train_test, algo))
+    get_Xpath = lambda train_test, algo: os.path.join(path, '{}_{}_Xrecon.csv'.format(train_test, algo))
     get_ypath = lambda train_test: os.path.join(path, 'y_{}.csv'.format(train_test))
 
     softImpute_Xtrain_path = get_Xpath('train','softImpute')
@@ -139,8 +139,8 @@ def svm_prediction_pipeline(root, sub_folder):
 if __name__ == '__main__':
     root = '../../data/mnist/'
     accuracies = {}
-    acc_path = '../../data/mnist/accuracy/v11/sgd_classification.json'
-    sub_folders = os.listdir(os.path.join(root, 'imputed', VERSION))
+    acc_path = os.path.join('../../data/mnist/accuracy', VERSION, 'sgd_classification_recon.json')
+    sub_folders = os.listdir(os.path.join(root, 'imputed', "v11"))
 
     count = 1 
     exps = [sub_folder for sub_folder in sub_folders \

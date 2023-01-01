@@ -617,7 +617,7 @@ imputationPipeline<- function(
   print("imputation is done, start saving result")
   # writing result   
   write.csv(X.train, file.path(curr_dir, main_dir,'../processed', "Xtrain.csv"), row.names=FALSE) 
-  write.csv(X.train, file.path(curr_dir, main_dir,'../processed', "Xtest.csv"), row.names=FALSE) 
+  write.csv(X.test, file.path(curr_dir, main_dir,'../processed', "Xtest.csv"), row.names=FALSE) 
   
   # imputed data  
   write.csv(result_impDi$train, file.path(sub_path, 'train_impDi.csv'), row.names=FALSE) 

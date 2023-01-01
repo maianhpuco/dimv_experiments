@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np 
 import time
 import json 
-
+from datetime import datetime 
 from sklearn import svm 
 from sklearn.model_selection import cross_val_score 
 from sklearn.model_selection import KFold
@@ -13,18 +13,34 @@ from sklearn.pipeline import Pipeline
 from sklearn import metrics
 from sklearn.svm import LinearSVC
 from sklearn.linear_model import SGDClassifier
-  
-HYPERPARAMS = {'C': 5, 'gamma': 0.01}  
-VERSION = 'v11'
-def svm_prediction(X_train, y_train, X_test, y_test, name, root, sub_folder):
+from sklearn import pipeline 
+
+from sklearn.kernel_approximation import Nystroem
+VERSION = 'v12'
+FOLDER = 'V12_ver1'
+
+
+
+def svm_prediction(X_train, y_train, X_test, y_test, name, root, sub_folder, loss):
     start_prediction = time.time()
-    model = SGDClassifier()
+    print("Start prediction")
+   # model = svm.SVC(C = 5, gamma = 0.05)
+    #feature_map_nystroem = Nystroem(gamma=.05, random_state=1) 
+    #nystroem_approx_svm =  pipeline.Pipeline([("feature_map", feature_map_nystroem),
+#                                              ("svm", svm.LinearSVC(C=100))]) 
+
+    model = SGDClassifier(
+            loss = loss,  
+            n_jobs = -1, 
+            max_iter = 10000 
+            )
+
     model.fit(X_train, y_train)
 
     y_pred = model.predict(X_test)
 
-    pred_output_path = os.path.join(root, 'prediction_output/', VERSION, sub_folder)
-    acc_path = os.path.join(root,'accuracy', VERSION)
+    pred_output_path = os.path.join(root, 'prediction_output/',FOLDER, sub_folder)
+    acc_path = os.path.join(root,'accuracy', FOLDER)
 
     if not os.path.isdir(pred_output_path):
         os.mkdir(pred_output_path)
@@ -36,15 +52,12 @@ def svm_prediction(X_train, y_train, X_test, y_test, name, root, sub_folder):
     ypred_df = pd.DataFrame(y_pred, columns=["ypred"]) 
     ypred_df.to_csv(pred_file_path('{}.csv'.format(name)))
     acc = metrics.accuracy_score(y_test, y_pred)
-    print("{}  with Acc {} in Predition Time {} mins".format(
-        name,
-        acc, 
-        (time.time()-start_prediction)/60)
-        )
+    duration = (time.time() - start_prediction)/60 
+    print("{}  with Acc {} in Predition Time {} mins".format(name, acc, duration))
     return acc  
 
-def svm_prediction_pipeline(root, sub_folder):
-    path = os.path.join(root+"imputed/", VERSION, sub_folder)
+def svm_prediction_pipeline(root, sub_folder, loss):
+    path = os.path.join(root, "imputed/", VERSION, sub_folder)
     print("start reading data at path", path)
 
     get_Xpath = lambda train_test, algo: os.path.join(path, '{}_{}.csv'.format(train_test, algo))
@@ -106,7 +119,8 @@ def svm_prediction_pipeline(root, sub_folder):
              softImpute_ytest, 
              "SoftImpute", 
              root, 
-             sub_folder
+             sub_folder, 
+             loss
             )
     impDi_acc = svm_prediction(
              impDi_Xtrain, 
@@ -115,7 +129,8 @@ def svm_prediction_pipeline(root, sub_folder):
              impDi_ytest, 
              "impDi", 
              root, 
-             sub_folder
+             sub_folder, 
+             loss
             )
 
     acc = {
@@ -126,36 +141,58 @@ def svm_prediction_pipeline(root, sub_folder):
         }
 
     #save acc 
-    acc_path = os.path.join(root,'accuracy', VERSION)
-    if not os.path.isdir(acc_path):
-        os.mkdir(acc_path)
-    acc_file_path = os.path.join(acc_path, "".join([sub_folder, '.json']))
+    #acc_path = os.path.join(root,'accuracy', FOLDER)
+    #if not os.path.isdir(acc_path):
+    #    os.mkdir(acc_path)
+    #acc_file_path = os.path.join(acc_path, "".join([sub_folder, '.json']))
 
     print("acc ", acc)
-    with open(acc_file_path,'w') as f:
-        json.dump(acc, f)
+   # with open(acc_file_path,'w') as f:
+        #json.dump(acc, f)
     return acc
 
 if __name__ == '__main__':
     root = '../../data/mnist/'
     accuracies = {}
-    acc_path = '../../data/mnist/accuracy/v11/sgd_classification.json'
+    now = datetime.now()
+    time_string  = now.strftime("%Y-%m-%d_%H-%M-%S")
+
+    acc_path = os.path.join('../../data/mnist/accuracy/',FOLDER, 'acc_{}.csv'.format(
+        time_string))
     sub_folders = os.listdir(os.path.join(root, 'imputed', VERSION))
+     
+    losses = ["hinge", "log_loss", "log", "modified_huber", "squared_hinge", "perceptron", "squared_error", "huber", "epsilon_insensitive", "squared_epsilon_insensitive"]
 
     count = 1 
     exps = [sub_folder for sub_folder in sub_folders \
-            if  (len(sub_folder.split("_")) >  5) and (sub_folder.split("_")[-1]=='50')] 
+            if  (len(sub_folder.split("_")) >  5) \
+            and (sub_folder.split("_")[-1]=='50') \
+            and (sub_folder.split("_")[-3]) == '6060']
+    exps = pd.Series(exps).sort_values().to_numpy()
+    
 
-    for sub_folder in exps:
-        print("----No: ",count, len(exps))
-        count+=1
-        print("-------------------------------")
-        print("Starting {}".format(sub_folder))
-        acc = svm_prediction_pipeline(root, sub_folder)
-        accuracies.update(acc)
-    with open(acc_path,'w') as f:
-        json.dump(accuracies, f)
+    for loss in losses: 
+        print("-----{}-----".format(loss))
+        acc_this_loss = {}
+        print(loss, "-", exps)
+        
+        for sub_folder in exps:
+            print("----No: ",count, len(exps))
+            count+=1
+            print("-------------------------------")
+            print("Starting {}".format(sub_folder))
+            acc = svm_prediction_pipeline(root, sub_folder, loss)
+            acc_this_loss.update(acc)
 
-    print(accuracies)
+        accuracies.update({loss: acc_this_loss})
+
+    
+    df = pd.DataFrame(accuracies)
+    df.to_csv(acc_path)
+
+    
+        #with open(acc_path,'a') as f:
+        #    json.dump(accuracies, f)
+
 
     

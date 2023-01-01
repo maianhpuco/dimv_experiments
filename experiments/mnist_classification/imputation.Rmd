@@ -1,14 +1,24 @@
-## ----setup, include = FALSE------------------------------------------------------------------------------------------------------------
+---
+title: "classification_experiement_v9 - implement DIMVf"
+output:
+  pdf_document: default
+  html_document: default
+date: "2022-09-30"
+---
+
+
+```{r setup, include = FALSE}
 knitr::opts_chunk$set(cache = TRUE, echo=TRUE, eval = TRUE)
+``` 
 
 
-## --------------------------------------------------------------------------------------------------------------------------------------
+```{r}
 require(knitr)
 FILE_NAME = 'v12'
 purl("imputation.Rmd", output = 'imputation.R')
+```
 
-
-## --------------------------------------------------------------------------------------------------------------------------------------
+```{r}
 
 packages <- c(
   "missMDA", 
@@ -38,9 +48,10 @@ source('../../imputation_run.R')
 
 plan(multisession, workers = 8)  
 
+```
 
-
-## --------------------------------------------------------------------------------------------------------------------------------------
+IF HASNOT DOWNLOAD THE FILE YET THEN 
+```{r}
 #getting the path to save 
 
 curr_dir = getwd()
@@ -74,9 +85,12 @@ if (!file.exists(file.path(mnist_path, "train-images-idx3-ubyte")) |
     }  
 } 
   
+```
 
 
-## --------------------------------------------------------------------------------------------------------------------------------------
+IF FILE IS ALREADY DOWNLOADED AND UNZIP THEN JUST READ 
+
+```{r}
 # load image files
 load_image_file = function(filename) {
   ret = list()
@@ -100,9 +114,9 @@ load_label_file = function(filename) {
   y
 } 
 
+```
 
-
-## --------------------------------------------------------------------------------------------------------------------------------------
+```{r}
 # load images
 processing_mnist_data <- function (){
   train = load_image_file(file.path(mnist_path, "train-images-idx3-ubyte"))
@@ -114,9 +128,9 @@ processing_mnist_data <- function (){
   result = list('train'=train, 'test'=test)
   return(result)
 }
+``` 
 
-
-## --------------------------------------------------------------------------------------------------------------------------------------
+```{r}
 processed_data = processing_mnist_data()
 train = processed_data$train 
 test = processed_data$test
@@ -124,9 +138,15 @@ X.train = train[, -785]
 X.test = test[, -785]
 y.train = train[, 785, drop=F]
 y.test = test[, 785, drop=F] 
+``` 
 
 
-## --------------------------------------------------------------------------------------------------------------------------------------
+# DATA PREPARATION
+## READING DATA : 
+
+## CREATE NON RANDOM MISSING VALUE 
+
+```{r}
 get_image_position_spatial_to_flatten<- function(delImgPosWidth, delImgPosHeight){ 
   # delImgPosHeight: row 
   # delImgPosWeight : col 
@@ -135,9 +155,9 @@ get_image_position_spatial_to_flatten<- function(delImgPosWidth, delImgPosHeight
   idxs = im[delImgPosHeight, delImgPosWidth]  
   return(matrix(idxs,nrow = 1,byrow = T)[, ])
 }
+```  
 
-
-## --------------------------------------------------------------------------------------------------------------------------------------
+```{r}
 image_edge_deleting <- function(
     data, 
     delete_type, #by_percent, by_pixel_number 
@@ -175,9 +195,11 @@ flatten_columns_removed = get_image_position_spatial_to_flatten(
   return(result)
 }
 
+``` 
 
+`
 
-## --------------------------------------------------------------------------------------------------------------------------------------
+```{r}
 # visualize the deleted images 
 visualize_digit <- function(missing_X, y, train_removed_rows, per_col, per_row, title){
 
@@ -193,9 +215,12 @@ visualize_digit <- function(missing_X, y, train_removed_rows, per_col, per_row, 
 
 } 
 
+``` 
 
 
-## --------------------------------------------------------------------------------------------------------------------------------------
+
+
+```{r}
 
 sampling_data <- function(data, y_col_name, sample_perc){
   data$label= data[, y_col_name]
@@ -209,9 +234,10 @@ sampling_data <- function(data, y_col_name, sample_perc){
   return(result)
 }
 
+```
 
-
-## --------------------------------------------------------------------------------------------------------------------------------------
+Normalizing train and test using train 's parameters 
+```{r}
 normalizing <- function(x=None, Xtrain=None){
   na_mask = is.na(x)
   mean = apply(Xtrain, 2, mean, na.rm=TRUE)
@@ -233,9 +259,13 @@ reconstructingNormedMatrix <- function(X_norm, mean, std){
   reconstrc = sweep(mult, 2, mean, '+')
   return (reconstrc)
 } 
+```
 
 
-## --------------------------------------------------------------------------------------------------------------------------------------
+
+# FULL PIPELINE ON FULL DATASET MNIST: 
+
+```{r}
 mnistDataPreparation <- function(
     width_del_percent=None, 
     height_del_percent=None, 
@@ -294,18 +324,19 @@ mnistDataPreparation <- function(
   return(result) 
 }
 
+```
 
-
-## --------------------------------------------------------------------------------------------------------------------------------------
+```{r}
 curr_dir = getwd() 
 main_dir = paste0('../../data/mnist/') 
 
 write.csv(X.train, file.path(curr_dir, main_dir,'processed', "Xtrain.csv"), row.names=FALSE)
 write.csv(X.test, file.path(curr_dir, main_dir,'processed', "Xtest.csv"), row.names=FALSE) 
 
+```
 
 
-## --------------------------------------------------------------------------------------------------------------------------------------
+```{r}
 imputationPipeline<- function(
     width_del_percent=None,
     height_del_percent=None,
@@ -495,9 +526,10 @@ imputationPipeline<- function(
   print(paste0("Complete saving plot, pipeline is done ", sub_folder))
   #done saving plot --------------- 
 }
+```
 
 
-## --------------------------------------------------------------------------------------------------------------------------------------
+```{r}
  width_height_percentages =c(.6)
  sample_deleted_percentages = c(.5)
  correlation_threshold =c(.05, .1, .2, .3, .4, .5,.6,.7)
@@ -525,4 +557,5 @@ for (width_height_pc in width_height_percentages){
 }
 
 
+```
 

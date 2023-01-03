@@ -1,3 +1,7 @@
+Version 2: 
+
+
+Version 1: Notebook Note
 # dimv's experiment note 
 # clf/v5
 - About: Implementation of DIMV on MNIST: using all features in impDi

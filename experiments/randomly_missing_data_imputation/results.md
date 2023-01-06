@@ -2,7 +2,7 @@
 ##### Accuracy 
 |   missing_rate | dataset_name   | group      |     mean |        sd |
 |---------------:|:---------------|:-----------|---------:|----------:|
-|            0.1 | iris           | impDi      | 0.953333 | 0.0548848 |
+|            0.1 | iris           | *impDi*    | 0.953333 | 0.0548848 |
 |            0.1 | iris           | softImpute | 0.94     | 0.058373  |
 |            0.1 | iris           | imputePCA  | 0.933333 | 0.0544331 |
 |            0.1 | iris           | missForest | 0.933333 | 0.0702728 |
@@ -12,16 +12,16 @@
 |            0.1 | ionosphere     | missForest | 0.94873  | 0.0399325 |
 |            0.1 | ionosphere     | mice       | 0.946032 | 0.0409019 |
 |            0.1 | ionosphere     | softImpute | 0.943175 | 0.0421278 |
-|            0.1 | ionosphere     | impDi      | 0.943095 | 0.0402256 |
+|            0.1 | ionosphere     | *impDi*    | 0.943095 | 0.0402256 |
 |            0.1 | ionosphere     | kNNimpute  | 0.926111 | 0.0569447 |
 |            0.1 | seeds          | imputePCA  | 0.928571 | 0.0561196 |
-|            0.1 | seeds          | impDi      | 0.92381  | 0.0751248 |
+|            0.1 | seeds          | *impDi*    | 0.92381  | 0.0751248 |
 |            0.1 | seeds          | mice       | 0.92381  | 0.0680877 |
 |            0.1 | seeds          | kNNimpute  | 0.919048 | 0.0746201 |
 |            0.1 | seeds          | missForest | 0.919048 | 0.0675303 |
 |            0.1 | seeds          | softImpute | 0.909524 | 0.0725659 |
 |            0.1 | wine           | imputePCA  | 0.977451 | 0.0291259 |
-|            0.1 | wine           | impDi      | 0.971569 | 0.029993  |
+|            0.1 | wine           | *impDi*    | 0.971569 | 0.029993  |
 |            0.1 | wine           | softImpute | 0.971569 | 0.029993  |
 |            0.1 | wine           | missForest | 0.966013 | 0.0392822 |
 |            0.1 | wine           | mice       | 0.960458 | 0.0460219 |
@@ -58,7 +58,7 @@
 |   missing_rate | dataset_name   | group      |     mean |        sd |
 |---------------:|:---------------|:-----------|---------:|----------:|
 |            0.2 | iris           | missForest | 0.966667 | 0.0351364 |
-|            0.2 | iris           | impDi      | 0.96     | 0.0466137 |
+|            0.2 | iris           | *impDi*    | 0.96     | 0.0466137 |
 |            0.2 | iris           | mice       | 0.953333 | 0.0322031 |
 |            0.2 | iris           | imputePCA  | 0.946667 | 0.0421637 |
 |            0.2 | iris           | softImpute | 0.92     | 0.0819515 |
@@ -66,17 +66,17 @@
 |            0.2 | ionosphere     | imputePCA  | 0.946032 | 0.0451196 |
 |            0.2 | ionosphere     | missForest | 0.940317 | 0.0431092 |
 |            0.2 | ionosphere     | softImpute | 0.929127 | 0.0593113 |
-|            0.2 | ionosphere     | impDi      | 0.925952 | 0.0450141 |
+|            0.2 | ionosphere     | *impDi*    | 0.925952 | 0.0450141 |
 |            0.2 | ionosphere     | mice       | 0.923175 | 0.050235  |
 |            0.2 | ionosphere     | kNNimpute  | 0.920397 | 0.0594809 |
 |            0.2 | seeds          | missForest | 0.919048 | 0.0552144 |
 |            0.2 | seeds          | imputePCA  | 0.914286 | 0.0437589 |
 |            0.2 | seeds          | mice       | 0.904762 | 0.0839921 |
 |            0.2 | seeds          | softImpute | 0.9      | 0.0612707 |
-|            0.2 | seeds          | impDi      | 0.890476 | 0.0810923 |
+|            0.2 | seeds          | *impDi*    | 0.890476 | 0.0810923 |
 |            0.2 | seeds          | kNNimpute  | 0.87619  | 0.0875178 |
 |            0.2 | wine           | missForest | 0.949673 | 0.0486966 |
-|            0.2 | wine           | impDi      | 0.944118 | 0.0453727 |
+|            0.2 | wine           | *impDi*    | 0.944118 | 0.0453727 |
 |            0.2 | wine           | imputePCA  | 0.938562 | 0.0409563 |
 |            0.2 | wine           | softImpute | 0.927124 | 0.0454928 |
 |            0.2 | wine           | mice       | 0.921242 | 0.04897   |
@@ -112,7 +112,7 @@
 ##### Accuracy 
 |   missing_rate | dataset_name   | group      |     mean |        sd |
 |---------------:|:---------------|:-----------|---------:|----------:|
-|            0.3 | iris           | impDi      | 0.953333 | 0.0548848 |
+|            0.3 | iris           | *impDi*    | 0.953333 | 0.0548848 |
 |            0.3 | iris           | missForest | 0.933333 | 0.0444444 |
 |            0.3 | iris           | softImpute | 0.933333 | 0.0888889 |
 |            0.3 | iris           | mice       | 0.92     | 0.0525874 |
@@ -123,15 +123,15 @@
 |            0.3 | ionosphere     | mice       | 0.91754  | 0.0524537 |
 |            0.3 | ionosphere     | softImpute | 0.914762 | 0.0392965 |
 |            0.3 | ionosphere     | kNNimpute  | 0.911825 | 0.0470341 |
-|            0.3 | ionosphere     | impDi      | 0.857619 | 0.0482733 |
+|            0.3 | ionosphere     | *impDi*    | 0.857619 | 0.0482733 |
 |            0.3 | seeds          | missForest | 0.909524 | 0.052405  |
 |            0.3 | seeds          | mice       | 0.9      | 0.0612707 |
 |            0.3 | seeds          | softImpute | 0.9      | 0.0612707 |
-|            0.3 | seeds          | impDi      | 0.890476 | 0.0504452 |
+|            0.3 | seeds          | *impDi*    | 0.890476 | 0.0504452 |
 |            0.3 | seeds          | imputePCA  | 0.890476 | 0.0552144 |
 |            0.3 | seeds          | kNNimpute  | 0.780952 | 0.081557  |
 |            0.3 | wine           | imputePCA  | 0.944118 | 0.0453727 |
-|            0.3 | wine           | impDi      | 0.938235 | 0.0559376 |
+|            0.3 | wine           | *impDi*    | 0.938235 | 0.0559376 |
 |            0.3 | wine           | missForest | 0.93268  | 0.0572533 |
 |            0.3 | wine           | softImpute | 0.89902  | 0.0936369 |
 |            0.3 | wine           | mice       | 0.882353 | 0.0883495 |
@@ -167,7 +167,7 @@
 ##### Accuracy 
 |   missing_rate | dataset_name   | group      |     mean |        sd |
 |---------------:|:---------------|:-----------|---------:|----------:|
-|            0.4 | iris           | impDi      | 0.94     | 0.049191  |
+|            0.4 | iris           | *impDi*    | 0.94     | 0.049191  |
 |            0.4 | iris           | missForest | 0.926667 | 0.049191  |
 |            0.4 | iris           | kNNimpute  | 0.893333 | 0.0843274 |
 |            0.4 | iris           | mice       | 0.88     | 0.0612624 |
@@ -178,16 +178,16 @@
 |            0.4 | ionosphere     | mice       | 0.917381 | 0.0638092 |
 |            0.4 | ionosphere     | softImpute | 0.897619 | 0.0324719 |
 |            0.4 | ionosphere     | kNNimpute  | 0.880476 | 0.0343716 |
-|            0.4 | ionosphere     | impDi      | 0.829286 | 0.0716228 |
+|            0.4 | ionosphere     | *impDi*    | 0.829286 | 0.0716228 |
 |            0.4 | seeds          | missForest | 0.904762 | 0.0777616 |
-|            0.4 | seeds          | impDi      | 0.9      | 0.0759586 |
+|            0.4 | seeds          | *impDi*    | 0.9      | 0.0759586 |
 |            0.4 | seeds          | softImpute | 0.87619  | 0.119206  |
 |            0.4 | seeds          | imputePCA  | 0.871429 | 0.0746201 |
 |            0.4 | seeds          | mice       | 0.857143 | 0.116642  |
 |            0.4 | seeds          | kNNimpute  | 0.728571 | 0.0810923 |
 |            0.4 | wine           | imputePCA  | 0.938562 | 0.0664899 |
 |            0.4 | wine           | missForest | 0.921242 | 0.0705366 |
-|            0.4 | wine           | impDi      | 0.893464 | 0.0759752 |
+|            0.4 | wine           | *impDi*    | 0.893464 | 0.0759752 |
 |            0.4 | wine           | mice       | 0.887582 | 0.0741253 |
 |            0.4 | wine           | softImpute | 0.865359 | 0.128935  |
 |            0.4 | wine           | kNNimpute  | 0.793137 | 0.0770739 |

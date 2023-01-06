@@ -1,24 +1,14 @@
----
-title: "classification_experiement_v9 - implement DIMVf"
-output:
-  pdf_document: default
-  html_document: default
-date: "2022-09-30"
----
-
-
-```{r setup, include = FALSE}
+## ----setup, include = FALSE------------------------------------------------------------------------------------------------------
 knitr::opts_chunk$set(cache = TRUE, echo=TRUE, eval = TRUE)
-``` 
 
 
-```{r}
+## --------------------------------------------------------------------------------------------------------------------------------
 require(knitr)
 FILE_NAME = 'v12'
 purl("imputation.Rmd", output = 'imputation.R')
-```
 
-```{r}
+
+## --------------------------------------------------------------------------------------------------------------------------------
 
 packages <- c(
   "missMDA", 
@@ -31,7 +21,9 @@ packages <- c(
   "dslabs", 
   "cowplot", 
   "magick", 
-  "progress"
+  "progress", 
+  "datasets", 
+  "stats"
 )
 # Install packages not yet installed
 installed_packages <- packages %in% rownames(installed.packages())
@@ -42,111 +34,205 @@ if (any(installed_packages == FALSE)) {
 # Packages loading
 invisible(lapply(packages, library, character.only = TRUE)) 
 
-source('../../dimv3.R')  
-source('../../utils.R')  
-source('../../imputation_run.R')   
+library(here) 
+source(here('src/rscript/dimv.R'))  
+source(here('src/rscript/dpers.R'))   
+source(here('src/rscript/utils.R'))    
+source(here('src/rscript/imputation_comparation.R'))     
 
 plan(multisession, workers = 8)  
 
-```
-
-IF HASNOT DOWNLOAD THE FILE YET THEN 
-```{r}
-#getting the path to save 
-
-curr_dir = getwd()
-path = '../../data/mnist/raw/'
-
-mnist_path = file.path(curr_dir, path) 
-print(mnist_path)
-
-if (!file.exists(file.path(mnist_path, "train-images-idx3-ubyte")) |
-  !file.exists(file.path(mnist_path, "t10k-images-idx3-ubyte")) |
-  !file.exists(file.path(mnist_path, "train-labels-idx1-ubyte")) |
-  !file.exists(file.path(mnist_path, "t10k-labels-idx1-ubyte")) 
-  ){
-  
-  # getting the data 
-  mnist <- read_mnist(
-    path = NULL,
-    destdir = mnist_path, 
-    download = TRUE,
-    url = "https://www2.harvardx.harvard.edu/courses/IDS_08_v2_03/",
-    keep.files = TRUE
-  )  
-  
-  # clear folder data (avoid wrong zipping)
-  list_files = list.files(path=mnist_path) 
-  for (x in 1:length(list_files)){
-    file_path = file.path(mnist_path, list_files[x]) 
-    if (substring(file_path, nchar(file_path)-2, nchar(file_path)) == '.gz'){
-      R.utils::gunzip(file_path, overwrite=TRUE, remove=FALSE) 
-    }
-    }  
-} 
-  
-```
 
 
-IF FILE IS ALREADY DOWNLOADED AND UNZIP THEN JUST READ 
+## --------------------------------------------------------------------------------------------------------------------------------
 
-```{r}
-# load image files
-load_image_file = function(filename) {
-  ret = list()
-  f = file(filename, 'rb')
-  readBin(f, 'integer', n = 1, size = 4, endian = 'big')
-  n    = readBin(f, 'integer', n = 1, size = 4, endian = 'big')
-  nrow = readBin(f, 'integer', n = 1, size = 4, endian = 'big')
-  ncol = readBin(f, 'integer', n = 1, size = 4, endian = 'big')
-  x = readBin(f, 'integer', n = n * nrow * ncol, size = 1, signed = FALSE)
-  close(f)
-  data.frame(matrix(x, ncol = nrow * ncol, byrow = TRUE))
+label_col = "Species"
+data(iris)
+iris
+data = iris
+data
+labels_origin = as.numeric(factor(iris$Species))
+
+
+## --------------------------------------------------------------------------------------------------------------------------------
+labels_origin 
+
+
+
+## --------------------------------------------------------------------------------------------------------------------------------
+df = iris
+label_col = "Species"
+data = df[, !names(df) %in% c(label_col)]  
+data
+#shuffle 
+new_idx = sample(1:nrow(data))  
+data_new = data[new_idx, ] 
+label_new = labels[new_idx] 
+
+
+
+## --------------------------------------------------------------------------------------------------------------------------------
+label_new 
+
+
+## --------------------------------------------------------------------------------------------------------------------------------
+dim(Xtrain)
+
+## --------------------------------------------------------------------------------------------------------------------------------
+createRandomlyMissingData = function(data, rate){
+  data = as.matrix(data)
+  flatten = as.vector(data) 
+  mask = runif(length(flatten), min = 0, max = 1) < rate
+  flatten[mask]=NaN
+  return(matrix(flatten, ncol = 4))
 }
 
-# load label files
-load_label_file = function(filename) {
-  f = file(filename, 'rb')
-  readBin(f, 'integer', n = 1, size = 4, endian = 'big')
-  n = readBin(f, 'integer', n = 1, size = 4, endian = 'big')
-  y = readBin(f, 'integer', n = n, size = 1, signed = FALSE)
-  close(f)
-  y
+
+x = 1 
+
+
+
+
+## --------------------------------------------------------------------------------------------------------------------------------
+normalizing <- function(x=None, Xtrain=None){
+  na_mask = is.na(x)
+  mean = apply(Xtrain, 2, mean, na.rm=TRUE)
+  sd = apply(Xtrain, 2, sd, na.rm=TRUE)
+  
+  sd_equal_zero_mask = which(sd==0)
+  subtract_mean = sweep(x, 2, mean, '-')
+  X_normed = sweep(subtract_mean, 2, sd, "/")
+  
+  X_normed[is.na(X_normed)] = 0 
+  X_normed[is.infinite(X_normed)] = 0 
+  X_normed[na_mask] = NA 
+  result = list('X_normed'=X_normed, 'mean'=mean, 'sd'=sd, 'sd_equal_zero_mask'=sd_equal_zero_mask)
+  return (result) 
 } 
 
-```
 
-```{r}
-# load images
-processing_mnist_data <- function (){
-  train = load_image_file(file.path(mnist_path, "train-images-idx3-ubyte"))
-  test  = load_image_file(file.path(mnist_path,"t10k-images-idx3-ubyte")) 
+## --------------------------------------------------------------------------------------------------------------------------------
+#growth truth 
+label_new = as.factor(label_new)
+folds = createFolds(labels, k=5)  
+X = 1 
+test_filter = unlist(unname(folds[x])) 
 
-  train$label =  as.factor(load_label_file(file.path(mnist_path,"train-labels-idx1-ubyte")))
 
-  test$label = as.factor(load_label_file(file.path(mnist_path,"t10k-labels-idx1-ubyte")))
-  result = list('train'=train, 'test'=test)
-  return(result)
+X_train = data_new[-test_filter, ] 
+X_test = data_new[test_filter, ]
+y.train = label_new[-test_filter]
+y.test = label_new[test_filter]   
+
+fit.svm = train(
+  X_train,
+  y.train, 
+  method="svmRadial") 
+
+pred <- predict(fit.svm, X_test)
+pred
+
+y.test
+pred <- as.factor(pred)
+pred
+acc = mean(pred == y.test)
+print(acc )
+
+print(confusionMatrix(pred, as.factor(y.test))) 
+
+
+
+## --------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+## --------------------------------------------------------------------------------------------------------------------------------
+print(which(rowSums(is.na(missing.X_train_normed))==4))
+print(which(rowSums(is.na(missing.X_test_normed))==4))
+print(sum(is.na(missing.X_test_normed))) 
+
+
+## --------------------------------------------------------------------------------------------------------------------------------
+
+df = iris
+label_col = "Species"
+data = df[, !names(df) %in% c(label_col)]  
+
+ #shuffle  
+new_idx = sample(1:nrow(data))  
+data = data[new_idx, ] 
+labels = as.factor(labels_origin[new_idx]) 
+
+
+missing_data = createRandomlyMissingData(data, 0.2) 
+
+folds = createFolds(labels, k=10)  
+X = 2
+test_filter = unlist(unname(folds[x])) 
+
+missing.X_train = missing_data[-test_filter, ] 
+missing.X_test = missing_data[test_filter, ]
+y.train = labels[-test_filter]
+y.test = labels[test_filter]  
+
+train_normed = normalizing(x=missing.X_train,Xtrain=missing.X_train)
+missing.X_train_normed = train_normed$X_normed
+missing.X_train_mean = train_normed$mean
+missing.X_train_sd = train_normed$sd 
+
+test_normed = normalizing(x=missing.X_test, Xtrain=missing.X_train)
+missing.X_test_normed = test_normed$X_normed
+ 
+
+print(which(rowSums(is.na(missing.X_train_normed))==4))
+print(which(rowSums(is.na(missing.X_test_normed))==4))
+print(sum(is.na(missing.X_test_normed)))  
+
+
+func_list = list( 'impDi_run', 
+                 'softImpute_run', 
+                 'mice_run', 
+                 'imputePCA_run',  
+                 'kNNimpute_run', 
+                 'missForest_run')
+
+for(j in 1:length(func_list)){
+    print(unlist(strsplit(func_list[[j]], "_run"))[1]) 
+    tstart = Sys.time() 
+    func <- get(func_list[[j]])  
+    impted = func(missing.X_train_normed , y.train, missing.X_test_normed, y.test) 
+    set.seed(1)
+    
+    metric <- "Accuracy"
+    # print(dim(impted$train))
+    # print(length(y.train))
+    fit.svm = train(as.data.frame(impted$train), as.factor(y.train), method="svmRadial") 
+  
+    pred <- predict(fit.svm, as.data.frame(impted$test))
+    
+
+    pred <- as.factor(pred)
+    pred
+    acc = mean(pred == y.test)
+    print(acc )
+    
+
+  pred
 }
-``` 
-
-```{r}
-processed_data = processing_mnist_data()
-train = processed_data$train 
-test = processed_data$test
-X.train = train[, -785]
-X.test = test[, -785]
-y.train = train[, 785, drop=F]
-y.test = test[, 785, drop=F] 
-``` 
+ 
 
 
-# DATA PREPARATION
-## READING DATA : 
+## --------------------------------------------------------------------------------------------------------------------------------
+S = dpers(Xtrain)
+impDi(S, Xtrain, 0.1)
 
-## CREATE NON RANDOM MISSING VALUE 
 
-```{r}
+## --------------------------------------------------------------------------------------------------------------------------------
+Xtrain
+
+
+## --------------------------------------------------------------------------------------------------------------------------------
 get_image_position_spatial_to_flatten<- function(delImgPosWidth, delImgPosHeight){ 
   # delImgPosHeight: row 
   # delImgPosWeight : col 
@@ -155,9 +241,9 @@ get_image_position_spatial_to_flatten<- function(delImgPosWidth, delImgPosHeight
   idxs = im[delImgPosHeight, delImgPosWidth]  
   return(matrix(idxs,nrow = 1,byrow = T)[, ])
 }
-```  
 
-```{r}
+
+## --------------------------------------------------------------------------------------------------------------------------------
 image_edge_deleting <- function(
     data, 
     delete_type, #by_percent, by_pixel_number 
@@ -195,11 +281,9 @@ flatten_columns_removed = get_image_position_spatial_to_flatten(
   return(result)
 }
 
-``` 
 
-`
 
-```{r}
+## --------------------------------------------------------------------------------------------------------------------------------
 # visualize the deleted images 
 visualize_digit <- function(missing_X, y, train_removed_rows, per_col, per_row, title){
 
@@ -215,12 +299,9 @@ visualize_digit <- function(missing_X, y, train_removed_rows, per_col, per_row, 
 
 } 
 
-``` 
 
 
-
-
-```{r}
+## --------------------------------------------------------------------------------------------------------------------------------
 
 sampling_data <- function(data, y_col_name, sample_perc){
   data$label= data[, y_col_name]
@@ -234,10 +315,9 @@ sampling_data <- function(data, y_col_name, sample_perc){
   return(result)
 }
 
-```
 
-Normalizing train and test using train 's parameters 
-```{r}
+
+## --------------------------------------------------------------------------------------------------------------------------------
 normalizing <- function(x=None, Xtrain=None){
   na_mask = is.na(x)
   mean = apply(Xtrain, 2, mean, na.rm=TRUE)
@@ -259,13 +339,9 @@ reconstructingNormedMatrix <- function(X_norm, mean, std){
   reconstrc = sweep(mult, 2, mean, '+')
   return (reconstrc)
 } 
-```
 
 
-
-# FULL PIPELINE ON FULL DATASET MNIST: 
-
-```{r}
+## --------------------------------------------------------------------------------------------------------------------------------
 mnistDataPreparation <- function(
     width_del_percent=None, 
     height_del_percent=None, 
@@ -324,19 +400,18 @@ mnistDataPreparation <- function(
   return(result) 
 }
 
-```
 
-```{r}
+
+## --------------------------------------------------------------------------------------------------------------------------------
 curr_dir = getwd() 
-main_dir = paste0('../../data/mnist/') 
+main_dir = paste0('../../../data/mnist/') 
 
 write.csv(X.train, file.path(curr_dir, main_dir,'processed', "Xtrain.csv"), row.names=FALSE)
 write.csv(X.test, file.path(curr_dir, main_dir,'processed', "Xtest.csv"), row.names=FALSE) 
 
-```
 
 
-```{r}
+## --------------------------------------------------------------------------------------------------------------------------------
 imputationPipeline<- function(
     width_del_percent=None,
     height_del_percent=None,
@@ -433,7 +508,7 @@ imputationPipeline<- function(
     missing.X_train_sd
     )) 
   curr_dir = getwd() 
-  main_dir = paste0('../../data/mnist/imputed/', FILE_NAME,'/')
+  main_dir = paste0('../../../data/mnist/imputed/', FILE_NAME,'/')
       
   width_del = toString(as.integer(width_del_percent*100))
   heigh_del =  toString(as.integer(height_del_percent*100)) 
@@ -526,13 +601,16 @@ imputationPipeline<- function(
   print(paste0("Complete saving plot, pipeline is done ", sub_folder))
   #done saving plot --------------- 
 }
-```
 
 
-```{r}
- width_height_percentages =c(.6)
+## --------------------------------------------------------------------------------------------------------------------------------
+ # width_height_percentages =c(.6)
+ # sample_deleted_percentages = c(.5)
+ # correlation_threshold =c(.05, .1, .2, .3, .4, .5,.6,.7)
+
+ width_height_percentages =c(.5)
  sample_deleted_percentages = c(.5)
- correlation_threshold =c(.05, .1, .2, .3, .4, .5,.6,.7)
+ correlation_threshold =c(.1,.5)
 
 # width_height_percentages =c(.4) 
 # sample_deleted_percentages = c(.5)
@@ -557,5 +635,4 @@ for (width_height_pc in width_height_percentages){
 }
 
 
-```
 

@@ -1,0 +1,378 @@
+---
+title: "regression_model_dimv"
+output: html_document
+date: "2022-09-08"
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE, echo=TRUE, eval = TRUE)
+``` 
+
+
+```{r}
+require(knitr)
+purl("v1.Rmd", output = 'v1.R')
+
+``` 
+```{r}
+packages <- c(
+  "missMDA", 
+  "scales", 
+  "future.apply", 
+  "scales", 
+  "e1071",
+  "foreach", 
+  "caTools", 
+  "softImpute", 
+  "mice", 
+  "missForest", 
+  "caret", 
+  "future"
+)
+
+
+
+# Install packages not yet installed
+installed_packages <- packages %in% rownames(installed.packages())
+if (any(installed_packages == FALSE)) {
+  install.packages(packages[!installed_packages])
+}
+
+# Packages loading
+invisible(lapply(packages, library, character.only = TRUE)) 
+
+source('../../dimv2.R')  
+source('../../utils.R')  
+plan(multisession, workers = 8)  
+``` 
+
+
+
+# I. Function to run imputation on different methods:  
+
+[DRAFT] train and test to sanity check function 
+```{r, message = FALSE}
+data(geno)
+data(orange)
+``` 
+
+## IMPUTE WITH IMPDI 
+
+```{r, message = FALSE}
+impDi_run <- function(X.train, y.train, X.test, y.test, threshold=.8){ 
+  #a) on training set 
+  X.train[is.na(X.train)] <- NaN
+  sigmaDper = dpers(X.train)
+  
+  X_imp.train = impDi(sigmaDper, X.train, threshold)[,, drop=F]
+  #b) on testing set   
+  X.test[is.na(X.test)] <- NaN
+  X_imp.test = impDi(sigmaDper, X.test, threshold)[,, drop=F]
+  
+  result = list("train" = X_imp.train, "test" = X_imp.test)
+  return(result)
+}  
+``` 
+
+
+
+## SOFTIMPUTE 
+```{r, message = FALSE}
+softImpute_run <- function(X.train, y.train, X.test, y.test){
+  #a) on training set
+  fit_train = softImpute(as.matrix(X.train) , type = 'als') 
+  X_imp.train = softImpute::complete(
+                              as.matrix(X.train), 
+                              fit_train)[,,drop=F]
+  #b) on testing set 
+  fit_test = softImpute(as.matrix(X.test) , type = 'als') 
+  X_imp.test = softImpute::complete(
+                            as.matrix(X.test), 
+                            fit_test)[,,drop=F]
+  result = list("train" = X_imp.train, "test" = X_imp.test )
+  return(result)
+} 
+```
+
+## MICE 
+```{r, message = FALSE}
+mice_run <- function(X.train, y.train, X.test, y.test){
+  #a) on training set 
+  # parameter to set here 
+  X_mice.train = mice(X.train, print=FALSE)
+  X_imp.train = as.matrix(mice::complete(X_mice.train))
+  
+  #b) on testing set 
+  X.combine = rbind(X.test, X.train)  
+  imp.combine <-mice(X.combine, 
+                        ignore = c(
+                           rep(TRUE, dim(X.test)[1]), 
+                           rep(FALSE, dim(X.train)[1])), 
+                     print=FALSE)
+  X_imp.test = as.matrix(complete(imp.combine)[1: nrow(X.test),,drop=F]) 
+  result = list("train" = X_imp.train, "test" = X_imp.test)
+  return(result)
+}  
+```
+__Note:__
+mice(.., ignore=..) 
+ignore: (https://www.rdocumentation.org/packages/mice/versions/3.14.0/topics/mice)
+A logical vector of nrow(data) elements indicating which rows are ignored when creating the imputation model. The default NULL includes all rows that have an observed value of the variable to imputed. Rows with ignore set to TRUE do not influence the parameters of the imputation model, but are still imputed. We may use the ignore argument to split data into a training set (on which the imputation model is built) and a test set (that does not influence the imputation model estimates). Note: Multivariate imputation methods, like mice.impute.jomoImpute() or mice.impute.panImpute(), do not honour the ignore argument. 
+
+## IMPUTEDPCA 
+```{r, message = FALSE}
+imputePCA_run <-function(X.train, y.train, X.test, y.test){
+  #a) on training set 
+  ncomp = estim_ncpPCA(X.train, ncp.min=2)
+  fit_train= imputePCA(X.train, ncp= ncomp$ncp)
+  X_imp.train = fit_train$completeObs[,,drop=F]
+  pca <- prcomp(fit_train$completeObs, scale.=T, rank. = ncomp$ncp)  
+  
+  #b) on testing set 
+  missing <- is.na(X.test) 
+  X_imp.test = X.test
+  X_imp.test[missing] = 0 #initialize missing with 0  
+  test_pca <- predict(pca , newdata = X_imp.test)
+  test_pca_reconstructed <-  t(t(test_pca %*% t(pca$rotation)) * pca$scale + pca$center)   
+  X_imp.test[missing]=test_pca_reconstructed[missing]
+  result = list("train" = X_imp.train, "test" = X_imp.test[,,drop=F ])
+  return(result)
+}  
+
+```
+
+## KNNIMPUTE 
+```{r, message = FALSE}
+kNNimpute_run <-function(X.train, y.train, X.test, y.test){
+  #a) on training set 
+  X_imp.train = bnstruct::knn.impute(X.train, k=5)   
+  
+  #b) on testing set 
+  X.test_missing = as.matrix(X.test[rowSums(is.na(X.test)) > 0 ,,drop=F]) 
+  X.combine = rbind(X.test_missing, X.train) 
+  X_imp.combine = bnstruct::knn.impute(X.combine, k = 5)
+  X_imp.test_missing = X_imp.combine[1: nrow(X.test_missing),,drop=F] 
+
+  row_id = which(rownames(X.test) %in%  rownames(X_imp.test_missing)) 
+  X_imp.test = X.test[, ]
+  X_imp.test[row_id, ] = X_imp.test_missing
+  
+  result = list("train" = X_imp.train[, ], "test" = X_imp.test)
+  return(result)
+}  
+```
+
+
+## MISSFOREST 
+```{r, message = FALSE}
+missForest_run <- function(X.train, y.train, X.test, y.test){
+  #a) on training set 
+  # parameter to set here 
+  X_imp.train = missForest(X.train)$ximp
+  
+  #b) on testing set 
+  X.test_missing = as.matrix(X.test[rowSums(is.na(X.test)) > 0 ,,drop=F ]) 
+  X.combine = rbind(X.test_missing, X.train) 
+  X_imp.combine <- missForest(X.combine)$ximp 
+  
+  X_imp.test_missing  = X_imp.combine[1:nrow(X.test_missing), ] 
+  row_idx = which(rowSums(is.na(X.test)) >0) 
+  #row_id = which(rownames(X.test) %in%  rownames(X_imp.test_missing)) 
+  
+  X_imp.test = X.test[, ]
+  X_imp.test[row_idx, ] = X_imp.test_missing
+  result = list("train" =  X_imp.train[, ],  "test" = X_imp.test[, ])
+  return(result)
+}  
+``` 
+
+
+
+# II.Regression  
+```{r, message = FALSE, warning = FALSE}
+summary_result <- function(result, caclCol, groupByCol, iteration){
+  result$col = as.numeric(result[, caclCol]) 
+  result$imputation  = result[, groupByCol]
+  summary = data.frame(
+                  group=levels(factor(result$imputation)), 
+                  rmse_mean=(aggregate(result$col, by=list(result$imputation), FUN=mean)$x),
+                  rmse_sd=(aggregate(result$col, by=list(result$imputation), FUN=sd)$x), 
+                  iteration_times = iteration
+             )
+  summary = summary[order(summary$rmse_mean),]   
+  
+} 
+``` 
+
+
+```{r}
+regression_rmse <- function(i, data, dataset_name,  label_col, split_perc = 0.8) { 
+  Rsquare <- function (x, y) cor(x, y) ^ 2 
+  #1. Prepare train and test set   
+  func_list = list( 
+    'impDi_run', 
+    'softImpute_run', 
+    'mice_run', 
+    'imputePCA_run',  
+    'kNNimpute_run', 
+    'missForest_run')  
+  sample <- sample.split(data[, label_col], SplitRatio =split_perc) 
+  data.train  <- subset(data, sample == TRUE)
+  data.test <- subset(data, sample == FALSE)  
+  
+  missing.X_train = data.train[, !names(data) %in% c(label_col)]
+  y.train = data.train[,c(label_col)]  
+  missing.X_train = as.matrix(missing.X_train)
+  
+  missing.X_test = data.test[, !names(data) %in% c(label_col)]
+  y.test = data.test[,c(label_col)] 
+  missing.X_test = as.matrix(missing.X_test)
+  
+  results = data.frame(matrix(ncol = 4, nrow = 0))
+  colnames(results) <- c("iteration_num", "imputation_method", "rmse", "duration")
+  # normalize data
+  Xnorm.train = normalizing(x=missing.X_train,Xtrain=missing.X_train)$X_normed
+  Xnorm.test = normalizing(x=missing.X_test, Xtrain=missing.X_train)$X_normed 
+  
+  # Xnorm.train = unname(Xnorm.train)
+  # Xnorm.test = unname(Xnorm.test)
+  
+  #2. Imputation and 3. Compare prediction on regression  ---------- 
+  for(j in 1:length(func_list)){
+      tstart = Sys.time() 
+      func <- get(func_list[[j]])  
+      impted = func(Xnorm.train, y.train, Xnorm.test, y.test) 
+      duration = Sys.time()-tstart
+      
+      model <- caret::train(
+              x=impted$train, 
+              y=y.train,
+              method = 'svmLinear'
+            )
+      y_pred = predict(model, newdata=impted$test)  
+      rmse = caret::RMSE(y_pred, y.test) 
+      rsquare = Rsquare(y_pred, y.test)
+      new_result = data.frame( 
+                  list("iteration_num" = i, 
+                        "imputation_method" =  unlist(strsplit(func_list[[j]], "_run"))[1],
+                        "rmse" = rmse,
+                        "rsquare" = rsquare, 
+                        "imputation_duration" = duration)      
+                  ) 
+
+      if (j > 1){
+        results = rbind(results, new_result)
+      }else{
+        results = new_result 
+      }
+  }
+  return((do.call(rbind, results)))
+}
+```
+
+```{r}
+regression_pipeline_parallel <- function(dataset, dataset_name, label_name, split_perc=split_per, n=100){
+  run_regression<- function(j){
+    regression_rmse(j, dataset, dataset_name, label_name, split_perc = 0.7)   
+  }
+  total = n 
+  pb <- txtProgressBar(min = 0, max = total, style = 3) 
+  results <- foreach::foreach(i = 1:n, .combine='cbind') %dopar% {
+    setTxtProgressBar(pb, i)  
+    run_regression(i)
+  }
+  
+  results = data.frame(t(results))
+  return(results)
+}
+
+```
+
+
+```{r}
+run <- function(data, dataset_name, label_col, n){
+  start=Sys.time() 
+
+  curr_dir = getwd()
+  summary_dir = file.path(paste0('../../data/', dataset_name, '/', dataset_name, '_rmse_summary.csv')) 
+  rmse_dir = file.path(paste0('../../data/', dataset_name, '/', dataset_name, '_rmse.csv')) 
+  
+  
+  result =  regression_pipeline_parallel(data,  dataset_name, label_col, split_perc=0.7, n=n)
+  summary = summary_result(result, 'rmse', 'imputation_method', n ) 
+  
+  #write 
+  write.csv(result, file.path(curr_dir,rmse_dir))
+  write.csv(summary, file.path(curr_dir,summary_dir))
+  
+  print(Sys.time()-start)
+} 
+```
+
+# ```{r}
+# data = orange
+# dataset_name = 'orange' 
+# label_col = 'Typicity'
+# split_perc = .7 
+# ```
+
+
+<!-- ```{r} -->
+<!-- n = 5 -->
+<!-- start=Sys.time() -->
+
+<!-- curr_dir = getwd() -->
+<!-- summary_dir = file.path(paste0('../../data/', dataset_name, '/', dataset_name, '_rmse_summary.csv')) -->
+<!-- rmse_dir = file.path(paste0('../../data/', dataset_name, '/', dataset_name, '_rmse.csv')) -->
+
+
+<!-- result =  suppressWarnings(regression_pipeline_parallel(data,  dataset_name, label_col, split_perc=0.7, n=n)) -->
+<!-- summary = summary_result(result, 'rmse', 'imputation_method', n ) -->
+<!-- summary -->
+<!-- ``` -->
+
+
+```{r}
+#run(orange, 'orange', 'Typicity', 1000)
+# run(geno, 'geno', 'ACOR', 1000)
+```
+
+```{r}
+  # data = orange
+  # dataset_name = 'orange'
+  # label_col = 'Typicity'
+  # n = 10
+  data = geno
+  dataset_name = 'geno'
+  label_col = 'ACOR'
+  n = 1000 
+  start=Sys.time() 
+
+  curr_dir = getwd()
+  summary_dir = file.path(paste0('../../data/', dataset_name, '/', dataset_name, '_rmse_summary.csv')) 
+  rmse_dir = file.path(paste0('../../data/', dataset_name, '/', dataset_name, '_rmse.csv')) 
+  
+  
+  result =  regression_pipeline_parallel(data,  dataset_name, label_col, split_perc=0.7, n=n)
+  summary = summary_result(result, 'rmse', 'imputation_method', n ) 
+  
+  #write 
+  write.csv(result, file.path(curr_dir,rmse_dir))
+  write.csv(summary, file.path(curr_dir,summary_dir))
+  
+  print(Sys.time()-start) 
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+

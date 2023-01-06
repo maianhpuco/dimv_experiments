@@ -147,20 +147,22 @@ def svm_prediction_pipeline(root, sub_folder):
     return acc
 
 if __name__ == '__main__':
-    root = '../../data/mnist/'
+    root = '../../../data/mnist/'
     accuracies = {}
     now = datetime.now()
     time_string  = now.strftime("%Y-%m-%d_%H-%M-%S")
 
-    acc_path = os.path.join('../../data/mnist/accuracy/',FOLDER, 'acc_{}.csv'.format(
+    acc_path = os.path.join('../../../data/mnist/accuracy/',FOLDER, 'acc_{}.csv'.format(
         time_string))
     sub_folders = os.listdir(os.path.join(root, 'imputed', VERSION))
      
     count = 1 
-    exps = [sub_folder for sub_folder in sub_folders \
-            if  (len(sub_folder.split("_")) >  5) \
-            and (sub_folder.split("_")[-1] == '50') \
-            and (sub_folder.split("_")[-3]) == '6060']
+    exps = [
+            sub_folder for sub_folder in sub_folders \
+                if  (len(sub_folder.split("_")) >  5) \
+                    and (sub_folder.split("_")[-1] == '50') \
+                    and (sub_folder.split("_")[-3]) in ['4040', '5050']
+            ]
     exps = pd.Series(exps).sort_values().to_numpy()
     
 
@@ -171,7 +173,7 @@ if __name__ == '__main__':
         print("-------------------------------")
         print("Starting {}".format(sub_folder))
         acc = svm_prediction_pipeline(root, sub_folder)
-        accuracies.update({sub_folder: acc})
+        accuracies.update(acc) 
 
     df = pd.DataFrame(accuracies)
     df.to_csv(acc_path)

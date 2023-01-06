@@ -2,12 +2,11 @@ import os
 import numpy as np
 import pandas as pd 
 import json 
-
+from datetime import datetime 
 def mse(a, b):
     return (np.square(a-b)).mean(axis=None)
 
 def calc_rmse(sub_folder, train_or_test):
-    root = '../../data/mnist/imputed/v11/'
     
     get_Xpath = lambda train_test, algo: \
             os.path.join(root, sub_folder, '{}_{}_Xrecon.csv'.format(train_or_test, algo))
@@ -27,26 +26,30 @@ def calc_rmse(sub_folder, train_or_test):
     softImputed_mse = mse(softImpute_imputed, original_data)
     impDi_mse = mse(impDi_imputed, original_data) 
 
-    
     result = {train_or_test: {"softImputed_mse": softImputed_mse, "impDi_mse": impDi_mse}} 
-    print(result)
     return result 
 
 def calc_rmse_pipeline(sub_folder):
     result = calc_rmse(sub_folder, "train")
     result.update(calc_rmse(sub_folder, "test"))
-
-    result_saved_path = os.path.join(root, sub_folder, 'mse.json')
-
-    with open(result_saved_path, 'w') as f:
-        _result = json.dump(result, f) 
+    print(result)
+    return result  
     
-
 if __name__=='__main__':
-    root = '../../data/mnist/imputed/v11/'
-    #print(os.listdir(root))
+    root = '../../../data/mnist/imputed/v12/'
+    mse_results = {}
     for sub_folder in os.listdir(root):
         if len(sub_folder.split("_")) >3 \
                 and sub_folder.split("_")[-1]=='50':
-            print(sub_folder)
-            calc_rmse_pipeline(sub_folder)
+            mse_results.update({sub_folder :calc_rmse_pipeline(sub_folder)}) 
+    
+    
+    df = pd.DataFrame(mse_results)
+    print(df)
+    now = datetime.now()
+    string_time = now.strftime("%Y-%m-%d-%H:%M")
+
+    result_path = os.path.join(root, "../../mse", "".join([string_time, '.csv']))
+    
+    df.to_csv(result_path) 
+    

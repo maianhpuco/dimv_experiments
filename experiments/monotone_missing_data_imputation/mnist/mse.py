@@ -3,10 +3,22 @@ import numpy as np
 import pandas as pd 
 import json 
 from datetime import datetime 
-def mse(a, b):
+def rmse(a, b):
     return (np.square(a-b)).mean(axis=None)
 
-def calc_rmse(sub_folder, train_or_test):
+def rmse_loss(ori_data, imputed_rescaled_data, missing_pos_filter):
+    '''Compute RMSE loss between ori_data and rescaled_data 
+    Args:
+    Return:
+    '''
+    nominator = np.sum(((1-missing_pos_filter) * ori_data - (1-missing_pos_filter) * imputed_rescaled_data)**2)
+    denominator = np.sum(1-missing_pos_filter)
+  
+    rmse = np.sqrt(nominator/float(denominator))
+    return rmse    
+
+
+def main(sub_folder, train_or_test):
     
     get_Xpath = lambda train_test, algo: \
             os.path.join(root, sub_folder, '{}_{}_Xrecon.csv'.format(train_or_test, algo))

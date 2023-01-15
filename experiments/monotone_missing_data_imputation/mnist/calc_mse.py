@@ -32,9 +32,9 @@ def rmse_loss(ori_data, imputed_rescaled_data, missing_pos_filter):
     Args:
     Return:
     '''
-    nominator = np.sum(((1-missing_pos_filter) * ori_data - (1-missing_pos_filter) * imputed_rescaled_data)**2)
-    denominator = np.sum(1-missing_pos_filter)
-  
+    nominator = np.sum(((missing_pos_filter * ori_data) - (missing_pos_filter * imputed_rescaled_data))**2)
+    denominator = np.sum(missing_pos_filter)
+ 
     rmse = np.sqrt(nominator/float(denominator))
     return rmse 
 
@@ -46,8 +46,8 @@ get_imputed_data_path = lambda train_or_test, sub_folder, algo: \
         os.path.join(DATA_FOLDER, sub_folder, '{}_{}.csv'.format(train_or_test, algo))
 get_ori_data_path = lambda train_or_test: \
         os.path.join(ORI_DATA_FOLDER, "X{}.csv".format(train_or_test))
-
-
+get_rescaled_data_path= lambda train_or_test, sub_folder, algo: \
+        os.path.join(DATA_FOLDER, sub_folder, '{}_Gain_Xrecon.csv'.format(train_or_test, algo))
 def calc_rmse(algo_name, train_or_test): 
     '''
     Calculate RMSE of original data set and the imputed one (after rescaled) for all the imputation sample 
@@ -71,12 +71,22 @@ def calc_rmse(algo_name, train_or_test):
             del X_train_ori
             del X_train_normed_missing 
 
-            missing_normed_data = pd.read_csv(get_normed_missing_data_path(train_or_test, folder_name, algo_name)).to_numpy()
-            imputed_data = pd.read_csv(get_imputed_data_path(train_or_test, folder_name, algo_name)).to_numpy()
-            ori_data = pd.read_csv(get_ori_data_path(train_or_test)).to_numpy()
+            missing_normed_data = pd.read_csv(
+                    get_normed_missing_data_path(train_or_test, folder_name, algo_name)).to_numpy()
+
+            imputed_data = pd.read_csv(
+                    get_imputed_data_path(train_or_test, folder_name, algo_name)).to_numpy()
+
+            ori_data = pd.read_csv(
+                    get_ori_data_path(train_or_test)).to_numpy()
+
             rescaled_imputed_data = normalization_rescaling(
                 imputed_data, mus, stds)
-            missing_mask = np.isnan(imputed_data)*1
+
+            rescaled_df = pd.DataFrame(rescaled_imputed_data)
+            rescaled_df.to_csv(get_rescaled_data_path(train_or_test, folder_name, algo_name))
+
+            missing_mask = np.isnan(missing_normed_data)*1
             # calculate rmse 
             rmse = rmse_loss(ori_data, rescaled_imputed_data, missing_mask)
             print(folder_name, rmse)
@@ -92,10 +102,10 @@ def calc_rmse(algo_name, train_or_test):
         algo_name, 
         time_string))
     print("complete save result at {}".format(saved_path))
-    with open(saved_path, "w") as f:
-        json.dump(rmses, f)
-    
-    return rmses
+    #  with open(saved_path, "w") as f:
+    #      json.dump(rmses, f)
+    #  
+    #  return rmses
    
 
 def main(args):

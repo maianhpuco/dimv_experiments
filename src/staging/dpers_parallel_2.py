@@ -2,12 +2,28 @@ import os
 import sys 
 import pandas as pd
 import numpy as np
+from pathlib import Path
+import multiprocessing
 from tqdm import tqdm
  
-    
+import multiprocessing as mp
+
+from multiprocessing import Pool 
 import time 
 
-def dpers(X:np.ndarray)->np.ndarray:
+
+
+def dpers(data:np.ndarray)->np.ndarray:
+    print("new") 
+    def worker_init(S_init, X_init, Index_init):
+        global S 
+        global X 
+        global Index 
+        S = S_init 
+        X = X_init 
+        Index = Index_init 
+
+    X = data 
     N, P = X.shape;
 
     # Covariance matrix to be estimated
@@ -19,29 +35,37 @@ def dpers(X:np.ndarray)->np.ndarray:
     # Upper triangle indices
     upper_idx = list(zip(*np.triu_indices(P, 1)));
     Index = np.array(upper_idx) 
-    
-    @np.vectorize 
-    def find_cov_upper_triag(i, pbar):
-        pbar.update(1)
+
+    print("true")
+    def find_cov_upper_triag(i):
+    #pbar.update(1)
         if (S[Index[i, 0], Index[i, 0]] == 0 \
             or S[Index[i, 1], Index[i, 1]] == 0):
             return np.nan
-        
+
         return find_cov_ij(
                     X[:,[Index[i,0],Index[i,1]]] , 
                     S[Index[i,0], Index[i,0]], 
                     S[Index[i,1], Index[i,1]]
-                ) 
-    
-    with tqdm(total=len(Index)) as pbar:  
-        S_upper = find_cov_upper_triag(np.arange(len(Index)), pbar)
-    
+                )  
+    with Pool(
+            mp.cpu_count()*10, 
+            initializer=worker_init, 
+            initargs=(S, X, Index,)
+            ) as p:
+        S_upper = p.map(find_cov_upper_triag, range(len(Index)))
+        #S_upper = list(tqdm(p.imap(find_cov_upper_triag, range(len(Index))), total=len(Index))) 
+        
+    S_upper = np.array(S_upper)
     print(len(S_upper))
     assert (len(S_upper) == len(S[np.triu_indices(P,1)])), "Output of S's upper triangle is not in a correct shape" 
     S[np.triu_indices(P, 1)] = S_upper  
     S = S + S.T 
     np.fill_diagonal(S, np.diag(S)*0.5) 
     return S 
+
+
+
 
 def find_cov_ij(Xij, Sii, Sjj): 
     df = pd.DataFrame(Xij)  
@@ -63,5 +87,7 @@ def find_cov_ij(Xij, Sii, Sjj):
     roots = np.real(roots);
 
     scond = Sjj - (roots ** 2)/ Sii; 
-    etas = -m * np.log(m, out=np.ones_like(scond)*np.NINF, where=(m>0)) - (Sjj-2*roots/Sii*s12+roots**2/Sii**2*s11)/scond 
-    return roots[np.argmax(etas)]  
+    
+    etas = -m * np.log(scond, out=np.ones_like(scond)*np.NINF, where=(scond>0)) \
+        - (Sjj-2*roots/Sii*s12+roots**2/Sii**2*s11)/scond 
+    return roots[np.argmax(etas)]    

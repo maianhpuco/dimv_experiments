@@ -23,7 +23,6 @@ if module_path not in sys.path:
     sys.path.append(module_path)  
 
 #from utils import timeit, rmse_loss 
-from src.python.dpers import dpers 
 from src.python.dperv2 import dper 
 from load_data import load_data
 
@@ -56,7 +55,7 @@ def main():
     print(Xtrain.shape, ytrain.shape, Xtest.shape, ytest.shape)
     #create missing data 
     results = []
-    for missing_rate in [0.1, 0.2, 0.3, 0.4]:
+    for missing_rate in [.5]:#[0.1, 0.2, 0.3, 0.4]:
         print("-------")
         print("missing_rate", missing_rate)
 

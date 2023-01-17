@@ -56,7 +56,7 @@ def main():
     
     results = []
     #create missing data 
-    for missing_rate in [0.1, 0.2, 0.3, 0.4]:
+    for missing_rate in [.5, .1, .2, .3, .4]:
         print("------")
         print("missing rate", missing_rate)
 

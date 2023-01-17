@@ -512,7 +512,7 @@ DATASETS = c("iris", "ionosphere", "seeds", "wine", "breast_tissue", "new_thyroi
 #DATASETS = c("iris")
 NUM_FOLDS = 10
 
-DIMV_THRESHOLD_LIST = c(.01)
+DIMV_THRESHOLD_LIST = c(.3)
 MISSING_RATE_LIST = c(.5,.4,.3,.2,.1)
 total = length(DIMV_THRESHOLD_LIST) * length(MISSING_RATE_LIST)
 

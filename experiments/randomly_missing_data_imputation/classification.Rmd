@@ -1,13 +1,23 @@
-## ----setup, include = FALSE-------------------------------------------------------------------------------------------------------------------------------------------------
+---
+title: "classification_experiement_v9 - implement DIMVf"
+output:
+  pdf_document: default
+  html_document: default
+date: "2022-09-30"
+---
+
+
+```{r setup, include = FALSE}
 knitr::opts_chunk$set(cache = TRUE, echo=TRUE, eval = TRUE)
+``` 
 
 
-## ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+```{r}
 require(knitr)
 purl("imputation_v5.Rmd", output = 'imputation_v5.R')
+```
 
-
-## ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+```{r}
 packages <- c(
   "missMDA", 
   "softImpute", 
@@ -48,18 +58,20 @@ source(here('src/rscript/imputation_comparation.R'))
 plan(multisession, workers = 8)
 library(doParallel)
 registerDoParallel(cores=8) 
+```
 
-
-## ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+```{r}
 read_excel_url <- function(url, sheet_num){
   GET(url, write_disk(tf <- tempfile(fileext = ".xls")))
   df <- read_excel(tf, sheet=2) 
   unlink(tf)
   return(df)
 }
+```
 
+## Reading UCI dataset: 
 
-## ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+```{r}
 breast_tissue = read_excel_url('https://archive.ics.uci.edu/ml/machine-learning-databases/00192/BreastTissue.xls')
 breast_tissue = subset(breast_tissue, select = -c(1) )
 parkinsons = read.csv('http://archive.ics.uci.edu/ml/machine-learning-databases/parkinsons/parkinsons.data')
@@ -71,9 +83,16 @@ breast_cancer_wisconsin = subset(breast_cancer_wisconsin, select = -c(1) )
 # ecoli = read.csv('https://archive.ics.uci.edu/ml/machine-learning-databases/ecoli/ecoli.data', header=F)
 # ecoli = subset(ecoli, select = -c(1))
 # ecoli
+```
+
+# ```{r}
+# library(tscount)
+# data(ecoli)
+# ```
 
 
-## ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+## Reading R dataset: 
+```{r}
 breast_tissue = as.data.frame(breast_tissue)
 parkinsons = as.data.frame(parkinsons)
 new_thyroid = as.data.frame(new_thyroid)
@@ -84,9 +103,9 @@ data(iris)
 data(ionosphere)
 data(seeds) 
 data(wine)
+```
 
-
-## ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+```{r}
 #GLOBAL VARIABLES
 iris_conf                    = list("name" = "iris", "label_col" = "Species") 
 ionosphere_conf              = list("name" = "ionosphere", "label_col" = "V35") 
@@ -98,13 +117,19 @@ breast_tissue_conf           = list("name" = "breast_tissue", "label_col" = "Cla
 parkinsons_conf              = list("name" = "parkinsons", "label_col" = "status")  
 new_thyroid_conf             = list("name" = "new_thyroid", "label_col" = "V1")  
 breast_cancer_wisconsin_conf = list("name" = "breast_cancer_wisconsin", "label_col" = "V2")  
+```
 
-
-## ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# Dataset list
+```{r}
 DATASETS = c("iris", "ionosphere", "seeds", "wine", "breast_tissue", "parkinsons", "new_thyroid", "breast_cancer_wisconsin")
+```
 
 
-## ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+# Utils 
+
+```{r}
 createRandomlyMissingData = function(data, rate){
   data = as.matrix(data)
   col_num = dim(data)[2] 
@@ -115,9 +140,9 @@ createRandomlyMissingData = function(data, rate){
   flatten[mask]=NaN
   return(matrix(flatten, ncol = col_num))
 }
+```
 
-
-## ---- message = FALSE, warning = FALSE--------------------------------------------------------------------------------------------------------------------------------------
+```{r, message = FALSE, warning = FALSE}
 summary_result <- function(result, caclCol, groupByCol, fold_number, dataset_name, missing_rate, order_decreasing=TRUE){
   result$col = as.numeric(result[, caclCol]) 
   result$imputation  = result[, groupByCol]
@@ -132,9 +157,10 @@ summary_result <- function(result, caclCol, groupByCol, fold_number, dataset_nam
   summary$missing_rate = missing_rate
   return(summary)
 } 
+``` 
 
 
-## ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+```{r}
 summary_all_result <- function(result, acc_col="accuracy", mse_train_col="rmse_train", mse_test_col="rmse_test", groupByCol="imputation_method", iteration="fold_number"){
   result$accuracy = as.numeric(result[, acc_col]) 
   result$rmse_train = as.numeric(result[, mse_train_col])
@@ -163,10 +189,12 @@ summary_all_result <- function(result, acc_col="accuracy", mse_train_col="rmse_t
   return(summary)
 }  
 
+```
 
 
-## ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-imputeAndPredictionOnEachFold <- function(fold, missing_data, data, labels, folds, dataset_name, folder_name, DIMVthreshold){ 
+
+```{r}
+PredictionOnEachFold <- function(fold, missing_data, data, labels, folds, dataset_name, folder_name, DIMVthreshold){ 
   test_filter = unlist(unname(folds[fold])) 
   
   #filter fold's data 
@@ -180,6 +208,7 @@ imputeAndPredictionOnEachFold <- function(fold, missing_data, data, labels, fold
     reconstrc = sweep(mult, 2, mean, '+')
     return (reconstrc)
   }
+  
   labels = as.factor(labels)
   
   missing.X_train = missing_data[-test_filter, ] 
@@ -256,6 +285,7 @@ imputeAndPredictionOnEachFold <- function(fold, missing_data, data, labels, fold
     }
     
 
+    #reading_folds: 
     
 
 #     print(which(rowSums(is.na(missing.X_train_normed))==dim(data)[2]))
@@ -297,10 +327,11 @@ imputeAndPredictionOnEachFold <- function(fold, missing_data, data, labels, fold
   }
   return(results)
 }
+```
 
 
-## ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-imputeAndClassificationPipeline <- function(
+```{r}
+ClassificationPipeline <- function(
     dataset, 
     dataset_name, 
     label_col, 
@@ -324,6 +355,7 @@ imputeAndClassificationPipeline <- function(
   
   allNANinRowsFound = length(which(rowSums(is.na(missing_data))==dim(data)[2])) > 0 
 
+  
   if (allNANinRowsFound){
     print(length(which(rowSums(is.na(missing_data))==dim(data)[2])) )
     print(paste0("allNANinRowsFound = ", allNANinRowsFound, "_in_dataset", dataset_name))
@@ -384,11 +416,14 @@ imputeAndClassificationPipeline <- function(
   print("done saving result")
   return(prediction_results)
 } 
+```
 
 
-## ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-executeImputeAndClassification <- function(root, DIMV_THRESHOLD, MISSING_RATE, NUM_FOLDS, DATASETS){
+
+```{r}
+
+executeClassification <- function(root, MISSING_RATE, NUM_FOLDS, DATASETS){
   
   formatFloat2String <- function(float_value){
     i = as.integer(float_value*100) 
@@ -404,32 +439,24 @@ executeImputeAndClassification <- function(root, DIMV_THRESHOLD, MISSING_RATE, N
     )
   
   
-  print(folder_name)
+  
+  print
+  
   
   count = 0
   for (dataset_name in DATASETS) {
     print(paste0("dataset ", dataset_name))
     
-    dataset_conf =  get(paste0(dataset_name, "_conf")) 
-    dataset = get(dataset_name)
-    label_col = dataset_conf$label_col 
-    
-    result = NULL 
-    while(is.null(result)){
-      try({
-        result = imputeAndClassificationPipeline(
-                      dataset,
-                     	dataset_name,
-                     	label_col,
-                     	DIMV_THRESHOLD,
-                     	root,
-                     	folder_name,
-                     	MISSING_RATE,
-                     	NUM_FOLDS
-                      )
-        break #break/exit the for-loop
-      }, silent = FALSE)
-    }
+    result = imputeAndClassificationPipeline(
+                  dataset,
+                 	dataset_name,
+                 	label_col,
+                 	DIMV_THRESHOLD,
+                 	root,
+                 	folder_name,
+                 	MISSING_RATE,
+                 	NUM_FOLDS
+                  )
   
   #   acc_summary = result$acc_summary
   #   rmse_summary = result$rmse_summary
@@ -457,10 +484,12 @@ executeImputeAndClassification <- function(root, DIMV_THRESHOLD, MISSING_RATE, N
   # write.csv(rmse_summaries, rmse_dir)
 }
 
+```
 
 
-## ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-root = "../../data/randomly_missing_dataset/svmRadial_20230116"
+```{r}
+saved_root = "../../data/randomly_missing_dataset/svmRadial_20230116"
+data_root = "../../data/randomly_missing_dataset/svmRadial_20230116/" 
 
 curr_dir = getwd()
 if (dir.exists(file.path(root)) == F){
@@ -471,7 +500,9 @@ if (dir.exists(file.path(root)) == F){
 
 #DATASETS = ('new_thyroid')
 #DATASETS = "new_thyroid"
-DATASETS = c("iris", "ionosphere", "seeds", "wine", "breast_tissue", "new_thyroid", "breast_cancer_wisconsin")
+#DATASETS = c("iris", "ionosphere", "seeds", "wine", "breast_tissue", "new_thyroid", "breast_cancer_wisconsin")
+DATASETS = c("iris", "ionosphere", "seeds", "wine")
+
 #DATASETS = c("ionosphere", "seeds", "wine")
 #DATASETS = c("iris", "ionosphere", "seeds", "wine", "breast_tissue", "new_thyroid", "breast_cancer_wisconsin")
 #DATASETS = c("iris", "breast_tissue", "new_thyroid", "breast_cancer_wisconsin")
@@ -492,9 +523,9 @@ for (DIMV_THRESHOLD in DIMV_THRESHOLD_LIST){
   for (MISSING_RATE in MISSING_RATE_LIST){
 
     print(">>>>>>>>>>>>>>START--------------")
-    print(paste0("MISSING_RATE_", MISSING_RATE, "_THRESHOLD_", DIMV_THRESHOLD , "_NUM_FOLDS_", NUM_FOLDS))
+    print(paste0("MISSING_RATE_", MISSING_RATE, "_THRESHOLD_" , "_NUM_FOLDS_", NUM_FOLDS))
 
-    executeImputeAndClassification(root, DIMV_THRESHOLD, MISSING_RATE, NUM_FOLDS, DATASETS)
+    executeImputeAndClassification(root, MISSING_RATE, NUM_FOLDS, DATASETS)
 
     # repeat {
     # tmp<-try(
@@ -511,4 +542,5 @@ for (DIMV_THRESHOLD in DIMV_THRESHOLD_LIST){
 }
 
 
+```
 

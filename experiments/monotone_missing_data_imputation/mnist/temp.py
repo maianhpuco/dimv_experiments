@@ -14,6 +14,7 @@ ORI_DATA_FOLDER = "data/mnist/original"
 
 def get_normalization_parameters(X_train_ori, X_train_normed_missing):
     nan_filter = np.isnan(X_train_normed_missing)
+
     _X_train_ori = X_train_ori.astype(np.float64)
     _X_train_ori[nan_filter] = float("NaN")
 
@@ -48,6 +49,8 @@ get_ori_data_path = lambda train_or_test: \
         os.path.join(ORI_DATA_FOLDER, "X{}.csv".format(train_or_test))
 get_rescaled_data_path= lambda train_or_test, sub_folder, algo: \
         os.path.join(DATA_FOLDER, sub_folder, '{}_Gain_Xrecon.csv'.format(train_or_test, algo))
+
+
 def calc_rmse(algo_name, train_or_test): 
     '''
     Calculate RMSE of original data set and the imputed one (after rescaled) for all the imputation sample 
@@ -62,7 +65,7 @@ def calc_rmse(algo_name, train_or_test):
     folders =  os.listdir(DATA_FOLDER) 
     #folders = ['threshold_50_deletedWidthHeightPc_5050_noImagePc_50']
 
-    for folder_name in folders:
+    for folder_name in ['threshold_10_deletedWidthHeightPc_6060_noImagePc_50']:
         data_path = os.path.join(DATA_FOLDER, folder_name)
         if os.path.isdir(data_path):
             X_train_ori = pd.read_csv(get_ori_data_path("train")).to_numpy()
@@ -82,30 +85,39 @@ def calc_rmse(algo_name, train_or_test):
 
             rescaled_imputed_data = normalization_rescaling(
                 imputed_data, mus, stds)
-
+                     
             rescaled_df = pd.DataFrame(rescaled_imputed_data)
-            rescaled_df.to_csv(get_rescaled_data_path(train_or_test, folder_name, algo_name))
+            rescaled_df.to_csv(
+                    get_rescaled_data_path(train_or_test, folder_name, algo_name)
+                    )
+            rescaled_df.to_csv(
+                     os.path.join(
+                         'data/mnist/plot/', 
+                         '{}_{}.csv'.format(algo_name, folder_name))
+                    )
+            print("complete saving result")
 
-            missing_mask = np.isnan(missing_normed_data)*1
-            # calculate rmse 
-            rmse = rmse_loss(ori_data, rescaled_imputed_data, missing_mask)
-            print(folder_name, rmse)
 
-            rmses.update({folder_name: rmse})
+            # missing_mask = np.isnan(missing_normed_data)*1
+            # # calculate rmse 
+            # rmse = rmse_loss(ori_data, rescaled_imputed_data, missing_mask)
+            # print(folder_name, rmse)
+
+            # rmses.update({folder_name: rmse})
     #---------
-    now = datetime.now()
-    time_string  = now.strftime("%Y-%m-%d_%H-%M-%S")
-    #---------
+   # now = datetime.now()
+   # time_string  = now.strftime("%Y-%m-%d_%H-%M-%S")
+   # #---------
  
-    print(rmses)
-    saved_path = os.path.join(DATA_FOLDER, "_rmse_{}_{}.json".format(
-        algo_name, 
-        time_string))
-    print("complete save result at {}".format(saved_path))
-    #  with open(saved_path, "w") as f:
-    #      json.dump(rmses, f)
-    #  
-    #  return rmses
+   # print(rmses)
+   # saved_path = os.path.join(DATA_FOLDER, "_rmse_{}_{}.json".format(
+   #     algo_name, 
+   #     time_string))
+   # print("complete save result at {}".format(saved_path))
+   # with open(saved_path, "w") as f:
+   #     json.dump(rmses, f)
+   # 
+   # return rmses
    
 
 def main(args):

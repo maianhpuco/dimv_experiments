@@ -1,14 +1,14 @@
-## ----setup, include = FALSE------------------------------------------------------------------------------------------------------------
+## ----setup, include = FALSE---------------------------------------------------
 knitr::opts_chunk$set(cache = TRUE, echo=TRUE, eval = TRUE)
 
 
-## --------------------------------------------------------------------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 require(knitr)
-FILE_NAME = 'v12'
+FILE_NAME = 'v13'
 purl("imputation.Rmd", output = 'imputation.R')
 
 
-## --------------------------------------------------------------------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 
 packages <- c(
   "missMDA", 
@@ -32,19 +32,21 @@ if (any(installed_packages == FALSE)) {
 # Packages loading
 invisible(lapply(packages, library, character.only = TRUE)) 
 
-source('../../dimv3.R')  
-source('../../utils.R')  
-source('../../imputation_run.R')   
+library(here) 
+source(here('src/rscript/dimv.R'))  
+source(here('src/rscript/dpers.R'))   
+source(here('src/rscript/utils.R'))    
+source(here('src/rscript/imputation_comparation.R'))     
 
-plan(multisession, workers = 8)  
+plan(multisession, workers = 4)  
 
 
 
-## --------------------------------------------------------------------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 #getting the path to save 
 
 curr_dir = getwd()
-path = '../../data/mnist/raw/'
+path = '../../../data/mnist/raw/'
 
 mnist_path = file.path(curr_dir, path) 
 print(mnist_path)
@@ -76,7 +78,7 @@ if (!file.exists(file.path(mnist_path, "train-images-idx3-ubyte")) |
   
 
 
-## --------------------------------------------------------------------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 # load image files
 load_image_file = function(filename) {
   ret = list()
@@ -102,7 +104,7 @@ load_label_file = function(filename) {
 
 
 
-## --------------------------------------------------------------------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 # load images
 processing_mnist_data <- function (){
   train = load_image_file(file.path(mnist_path, "train-images-idx3-ubyte"))
@@ -116,7 +118,7 @@ processing_mnist_data <- function (){
 }
 
 
-## --------------------------------------------------------------------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 processed_data = processing_mnist_data()
 train = processed_data$train 
 test = processed_data$test
@@ -126,7 +128,7 @@ y.train = train[, 785, drop=F]
 y.test = test[, 785, drop=F] 
 
 
-## --------------------------------------------------------------------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 get_image_position_spatial_to_flatten<- function(delImgPosWidth, delImgPosHeight){ 
   # delImgPosHeight: row 
   # delImgPosWeight : col 
@@ -137,7 +139,7 @@ get_image_position_spatial_to_flatten<- function(delImgPosWidth, delImgPosHeight
 }
 
 
-## --------------------------------------------------------------------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 image_edge_deleting <- function(
     data, 
     delete_type, #by_percent, by_pixel_number 
@@ -177,7 +179,7 @@ flatten_columns_removed = get_image_position_spatial_to_flatten(
 
 
 
-## --------------------------------------------------------------------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 # visualize the deleted images 
 visualize_digit <- function(missing_X, y, train_removed_rows, per_col, per_row, title){
 
@@ -195,7 +197,7 @@ visualize_digit <- function(missing_X, y, train_removed_rows, per_col, per_row, 
 
 
 
-## --------------------------------------------------------------------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 
 sampling_data <- function(data, y_col_name, sample_perc){
   data$label= data[, y_col_name]
@@ -211,7 +213,7 @@ sampling_data <- function(data, y_col_name, sample_perc){
 
 
 
-## --------------------------------------------------------------------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 normalizing <- function(x=None, Xtrain=None){
   na_mask = is.na(x)
   mean = apply(Xtrain, 2, mean, na.rm=TRUE)
@@ -235,7 +237,7 @@ reconstructingNormedMatrix <- function(X_norm, mean, std){
 } 
 
 
-## --------------------------------------------------------------------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 mnistDataPreparation <- function(
     width_del_percent=None, 
     height_del_percent=None, 
@@ -296,16 +298,7 @@ mnistDataPreparation <- function(
 
 
 
-## --------------------------------------------------------------------------------------------------------------------------------------
-curr_dir = getwd() 
-main_dir = paste0('../../data/mnist/') 
-
-write.csv(X.train, file.path(curr_dir, main_dir,'processed', "Xtrain.csv"), row.names=FALSE)
-write.csv(X.test, file.path(curr_dir, main_dir,'processed', "Xtest.csv"), row.names=FALSE) 
-
-
-
-## --------------------------------------------------------------------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 imputationPipeline<- function(
     width_del_percent=None,
     height_del_percent=None,
@@ -402,7 +395,7 @@ imputationPipeline<- function(
     missing.X_train_sd
     )) 
   curr_dir = getwd() 
-  main_dir = paste0('../../data/mnist/imputed/', FILE_NAME,'/')
+  main_dir = paste0('../../../data/mnist/imputed/', FILE_NAME)
       
   width_del = toString(as.integer(width_del_percent*100))
   heigh_del =  toString(as.integer(height_del_percent*100)) 
@@ -425,41 +418,39 @@ imputationPipeline<- function(
   if (dir.exists(sub_path)==F){
     dir.create(sub_path)
   }
-  print("imputation is done, start saving result")
-  # writing result
-  write.csv(X.train, file.path(curr_dir, main_dir,'../../processed', "Xtrain.csv"), row.names=FALSE)
-  write.csv(X.test, file.path(curr_dir, main_dir,'../../processed', "Xtest.csv"), row.names=FALSE)
-  write.csv(missing.X_train_normed, file.path(sub_path, "X_train_normed.csv"), row.names=FALSE)
-  write.csv(missing.X_test_normed, file.path(sub_path, "X_test_normed.csv"), row.names=FALSE)
+  print(paste0("Imputation is done, start saving result at ", sub_path))
+  # writing result 
+  write.table(missing.X_train_normed, file.path(sub_path, "X_train_normed.csv.gz"), row.names=FALSE)
+  write.table(missing.X_test_normed, file.path(sub_path, "X_test_normed.csv.gz"), row.names=FALSE)
   
   # imputed data
-  write.csv(result_impDi$train, file.path(sub_path, 'train_impDi.csv'), row.names=FALSE)
-  write.csv(result_impDi$test, file.path(sub_path, 'test_impDi.csv'), row.names=FALSE)
-  write.csv(result_softImpute$train, file.path(sub_path, 'train_softImpute.csv'), row.names=FALSE)
-  write.csv(result_softImpute$test, file.path(sub_path, 'test_softImpute.csv'), row.names=FALSE)
+  write.table(result_impDi$train, file.path(sub_path, 'train_impDi.csv.gz'), row.names=FALSE)
+  write.table(result_impDi$test, file.path(sub_path, 'test_impDi.csv.gz'), row.names=FALSE)
+  write.table(result_softImpute$train, file.path(sub_path, 'train_softImpute.csv.gz'), row.names=FALSE)
+  write.table(result_softImpute$test, file.path(sub_path, 'test_softImpute.csv.gz'), row.names=FALSE)
   
   #deleted rows
   write.csv(as.data.frame(train_removed_rows), file.path(sub_path, 'train_removed_rows.csv'), row.names=FALSE)
   write.csv(as.data.frame(test_removed_rows), file.path(sub_path, 'test_removed_rows.csv'), row.names=FALSE)
   
-  #rescaled as original size of image
-  write.csv(impDi.Xrecon.train, file.path(sub_path, 'train_impDi_Xrecon.csv'), row.names=FALSE)
-  write.csv(impDi.Xrecon.test, file.path(sub_path, 'test_impDi_Xrecon.csv'), row.names=FALSE)
-  write.csv(softImpute.Xrecon.train, file.path(sub_path, 'train_softImpute_Xrecon.csv'), row.names=FALSE)
-  write.csv(softImpute.Xrecon.test, file.path(sub_path, 'test_softImpute_Xrecon.csv'), row.names=FALSE)
+  # #rescaled as original size of image
+  # write.table(impDi.Xrecon.train, file.path(sub_path, 'train_impDi_Xrecon.csv.gz'), row.names=FALSE)
+  # write.table(impDi.Xrecon.test, file.path(sub_path, 'test_impDi_Xrecon.csv.gz'), row.names=FALSE)
+  # write.table(softImpute.Xrecon.train, file.path(sub_path, 'train_softImpute_Xrecon.csv.gz'), row.names=FALSE)
+  # write.table(softImpute.Xrecon.test, file.path(sub_path, 'test_softImpute_Xrecon.csv.gz'), row.names=FALSE)
 
-  #labeled
-  write.csv(y_train, file.path(sub_path, 'y_train.csv'), row.names=FALSE)
-  write.csv(y_test, file.path(sub_path, 'y_test.csv'), row.names=FALSE)
+  # #labeled
+  # write.csv(y_train, file.path(sub_path, 'y_train.csv'), row.names=FALSE)
+  # write.csv(y_test, file.path(sub_path, 'y_test.csv'), row.names=FALSE)
   
-  imputation_time <- vector(mode='list', length = 2)
-  imputation_time[[1]]<c('softImpute', 'DIMV')
-  imputation_time[[2]]<c(softImputeTime, impDiTime)
-  exportJson <- toJSON(imputation_time)
-  write(exportJson, 'imputation_time.json') 
+  # imputation_time <- vector(mode='list', length = 2)
+  # imputation_time[[1]]<c('softImpute', 'DIMV')
+  # imputation_time[[2]]<c(softImputeTime, impDiTime)
+  # exportJson <- toJSON(imputation_time)
+  # write(exportJson, 'imputation_time.json') 
   
   #saving plot ---------------
-  print("Start saving plot")
+  print("Done saving result, Start saving plot")
   softImputeImgPath <- file.path(sub_path, "softImpute_test.png") 
   png(softImputeImgPath, width=dev.size("px")[1] , height = dev.size("px")[2])  
   visualize_digit(softImpute.Xrecon.test, y_test, test_removed_rows, 2, 6) 
@@ -470,37 +461,18 @@ imputationPipeline<- function(
   visualize_digit(impDi.Xrecon.test, y_test, test_removed_rows, 2, 6) 
   dev.off()
   
-  merged_width = 525 #dev.size("px")[1]
-  merged_height = 525*2 +50 #dev.size("px")[2]*2+50
-  
-  p1 <- ggdraw() + draw_image(softImputeImgPath)
-  p2 <- ggdraw() + draw_image(impDiImgPath) 
-  
-  imgPath =  file.path(sub_path, "img.png")  
-  
-  png(imgPath,  width = merged_width, height = merged_height) 
-  
-  plot_grid(p1, p2, 
-            nrow = 2, 
-            ncol=1,
-            labels =  c('SoftImpute', 'impDi'), 
-            label_size = 12, 
-            scale=1,
-            vjust=c(2.0, 2.0),
-            label_colour = "blue")
-  dev.off()
-  # ç
-  #file.remove(softImputeImgPath)
-  #file.remove(impDiImgPath) 
-  print(paste0("Complete saving plot, pipeline is done ", sub_folder))
-  #done saving plot --------------- 
+
 }
 
 
-## --------------------------------------------------------------------------------------------------------------------------------------
- width_height_percentages =c(.6)
+## -----------------------------------------------------------------------------
+ # width_height_percentages =c(.6)
+ # sample_deleted_percentages = c(.5)
+ # correlation_threshold =c(.05, .1, .2, .3, .4, .5,.6,.7)
+
+ width_height_percentages =c(.6, .5, .4)
  sample_deleted_percentages = c(.5)
- correlation_threshold =c(.05, .1, .2, .3, .4, .5,.6,.7)
+ correlation_threshold =c(.1, .3)
 
 # width_height_percentages =c(.4) 
 # sample_deleted_percentages = c(.5)

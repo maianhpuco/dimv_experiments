@@ -80,11 +80,11 @@ new_thyroid = read.csv('https://archive.ics.uci.edu/ml/machine-learning-database
 breast_cancer_wisconsin = read.csv('https://archive.ics.uci.edu/ml/machine-learning-databases/breast-cancer-wisconsin/wdbc.data', header = F)
 breast_cancer_wisconsin = subset(breast_cancer_wisconsin, select = -c(1) ) 
 
-# ecoli = read.csv('https://archive.ics.uci.edu/ml/machine-learning-databases/ecoli/ecoli.data', header=F)
-# ecoli = subset(ecoli, select = -c(1))
-# ecoli
-```
-
+letter = read.csv('https://archive.ics.uci.edu/ml/machine-learning-databases/letter-recognition/letter-recognition.data', header=F)
+letter
+spam = read.csv('https://archive.ics.uci.edu/ml/machine-learning-databases/spambase/spambase.data', header=F )
+spam 
+``` 
 # ```{r}
 # library(tscount)
 # data(ecoli)
@@ -117,6 +117,9 @@ breast_tissue_conf           = list("name" = "breast_tissue", "label_col" = "Cla
 parkinsons_conf              = list("name" = "parkinsons", "label_col" = "status")  
 new_thyroid_conf             = list("name" = "new_thyroid", "label_col" = "V1")  
 breast_cancer_wisconsin_conf = list("name" = "breast_cancer_wisconsin", "label_col" = "V2")  
+letter_conf                  = list("name" = "letter", "label_col" = "V1")
+spam_conf                   = list("name"  = "spam", "label_col" = "V58")
+
 ```
 
 # Dataset list
@@ -160,36 +163,6 @@ summary_result <- function(result, caclCol, groupByCol, fold_number, dataset_nam
 ``` 
 
 
-```{r}
-summary_all_result <- function(result, acc_col="accuracy", mse_train_col="rmse_train", mse_test_col="rmse_test", groupByCol="imputation_method", iteration="fold_number"){
-  result$accuracy = as.numeric(result[, acc_col]) 
-  result$rmse_train = as.numeric(result[, mse_train_col])
-  result$rmse_test = as.numeric(result[, mse_test_col])
-  
-  result$imputation  = result[, groupByCol]
-  
-  summary = data.frame(
-        group=levels(factor(result$imputation)), 
-        
-        accuracy_mean=(aggregate(result$accuracy, by=list(result$imputation), FUN=mean)$x),
-        accuracy_sd=(aggregate(result$accuracy, by=list(result$imputation), FUN=sd)$x),  
-        
-        rmse_train_mean=(aggregate(result$rmse_train, by=list(result$imputation), FUN=mean)$x),
-        rmse_train_sd=(aggregate(result$rmse_train, by=list(result$imputation), FUN=sd)$x), 
-        
-        rmse_test_mean=(aggregate(result$rmse_test, by=list(result$imputation), FUN=mean)$x),
-        rmse_test_sd=(aggregate(result$rmse_test, by=list(result$imputation), FUN=sd)$x),  
-        
-        folds = max(result$fold_number)
-         )
-  
-  summary = summary[order(summary$accuracy_mean, decreasing=T),]   
-  summary$accuracy_ranking = rank(-summary$accuracy_mean)
-  summary$mse_ranking = rank(summary$rmse_test_mean)
-  return(summary)
-}  
-
-```
 
 
 
@@ -504,7 +477,8 @@ if (dir.exists(file.path(root)) == F){
 
 #DATASETS = ('new_thyroid')
 #DATASETS = "new_thyroid"
-DATASETS = c("iris", "ionosphere", "seeds", "wine", "breast_tissue", "new_thyroid", "breast_cancer_wisconsin")
+DATASETS = c("spam", "letter")
+#DATASETS = c("iris", "ionosphere", "seeds", "wine", "breast_tissue", "new_thyroid", "breast_cancer_wisconsin")
 #DATASETS = c("ionosphere", "seeds", "wine")
 #DATASETS = c("iris", "ionosphere", "seeds", "wine", "breast_tissue", "new_thyroid", "breast_cancer_wisconsin")
 #DATASETS = c("iris", "breast_tissue", "new_thyroid", "breast_cancer_wisconsin")

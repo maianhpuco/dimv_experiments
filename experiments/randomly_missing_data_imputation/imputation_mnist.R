@@ -135,6 +135,7 @@ X.train = train[, -785]
 X.test = test[, -785]
 y.train = train[, 785, drop=F]
 y.test = test[, 785, drop=F]
+
 # 
 
 
@@ -143,15 +144,15 @@ y.test = test[, 785, drop=F]
 
 # train_idx = sample(1:nrow(X.train))
 # test_idx = sample(1:nrow(X.test))
-# # 
+# #
 # 
-# X.train = train[, -785][train_idx, ,drop=F][1:1000,, drop=F]
+# X.train = train[, -785][train_idx, ,drop=F][1:10000,, drop=F]
 # X.test = test[, -785][test_idx, ,drop=F][1:1000,,drop=F]
 # 
 # y.train = train[, 785, drop=F][train_idx,,drop=F][1:10000,,drop=F]
-# y.test = test[, 785, drop=F][test_idx,,drop=F ][1:1000,,drop=F] 
-
-
+# y.test = test[, 785, drop=F][test_idx,,drop=F ][1:1000,,drop=F]
+# 
+# 
 # X.train = train[, -785][train_idx, ,drop=F][1:1000, 550:555, drop=F]
 # X.test = test[, -785][test_idx, ,drop=F][1:100,550:555,drop=F]
 # 
@@ -272,7 +273,7 @@ imputationPipeline <- function(path, DIMV_THRESHOLD, MISSING_RATE, X.train, y.tr
 
         func <- get(func_list[[j]])
         if (func_name == "impDi"){
-          impted = func(missing.X_train_normed , y.train, missing.X_test_normed, y.test, threshold=DIMV_THRESHOLD, print_progression = T)
+          impted = func(missing.X_train_normed , y.train, missing.X_test_normed, y.test, threshold=DIMV_THRESHOLD, print_progression = T, workers=7, run_parallel = T)
         }else{
           impted = suppressWarnings(func(missing.X_train_normed , y.train, missing.X_test_normed, y.test))
         }

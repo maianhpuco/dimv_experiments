@@ -1,24 +1,14 @@
----
-title: "classification_experiement_v9 - implement DIMVf"
-output:
-  pdf_document: default
-  html_document: default
-date: "2022-09-30"
----
-
-
-```{r setup, include = FALSE}
+## ----setup, include = FALSE------------------------------------------------------------------------------------------------------------------------------------------
 knitr::opts_chunk$set(cache = TRUE, echo=TRUE, eval = TRUE)
-``` 
 
 
-```{r}
+## --------------------------------------------------------------------------------------------------------------------------------------------------------------------
 require(knitr)
 
 purl("imputation_knn.Rmd", output = 'imputation_knn.R')
-```
 
-```{r}
+
+## --------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 packages <- c(
   "missMDA", 
@@ -50,20 +40,18 @@ source(here('src/rscript/imputation_comparation2.R'))
 
 plan(multisession, workers = 4)  
 
-```
 
-IF HASNOT DOWNLOAD THE FILE YET THEN 
-```{r}
+
+## --------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #getting the path to save 
 # SETTING 
 curr_dir = getwd()
 path = '../../../data/mnist/raw/'
 ROOT = '../../../data/mnist/imputed/' 
 FILE_NAME = 'v13'
-```
 
 
-```{r}
+## --------------------------------------------------------------------------------------------------------------------------------------------------------------------
 mnist_path = file.path(curr_dir, path) 
 print(mnist_path)
 
@@ -92,12 +80,9 @@ if (!file.exists(file.path(mnist_path, "train-images-idx3-ubyte")) |
     }  
 } 
   
-```
 
 
-IF FILE IS ALREADY DOWNLOADED AND UNZIP THEN JUST READ 
-
-```{r}
+## --------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # load image files
 load_image_file = function(filename) {
   ret = list()
@@ -121,9 +106,9 @@ load_label_file = function(filename) {
   y
 } 
 
-```
 
-```{r}
+
+## --------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # load images
 processing_mnist_data <- function (){
   train = load_image_file(file.path(mnist_path, "train-images-idx3-ubyte"))
@@ -135,9 +120,9 @@ processing_mnist_data <- function (){
   result = list('train'=train, 'test'=test)
   return(result)
 }
-``` 
 
-```{r}
+
+## --------------------------------------------------------------------------------------------------------------------------------------------------------------------
 processed_data = processing_mnist_data()
 train = processed_data$train 
 test = processed_data$test
@@ -145,17 +130,9 @@ X.train = train[, -785]
 X.test = test[, -785]
 y.train = train[, 785, drop=F]
 y.test = test[, 785, drop=F] 
-``` 
 
 
-
-
-# DATA PREPARATION
-## READING DATA : 
-
-## CREATE NON RANDOM MISSING VALUE 
-
-```{r}
+## --------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # get_image_position_spatial_to_flatten<- function(delImgPosWidth, delImgPosHeight){ 
 #   # delImgPosHeight: row 
 #   # delImgPosWeight : col 
@@ -164,9 +141,9 @@ y.test = test[, 785, drop=F]
 #   idxs = im[delImgPosHeight, delImgPosWidth]  
 #   return(matrix(idxs,nrow = 1,byrow = T)[, ])
 # }
-```  
 
-```{r}
+
+## --------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # image_edge_deleting <- function(
 #     data, 
 #     delete_type, #by_percent, by_pixel_number 
@@ -204,11 +181,9 @@ y.test = test[, 785, drop=F]
 #   return(result)
 # }
 
-``` 
 
-`
 
-```{r}
+## --------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # visualize the deleted images 
 # visualize_digit <- function(missing_X, y, train_removed_rows, per_col, per_row, title){
 # 
@@ -224,12 +199,9 @@ y.test = test[, 785, drop=F]
 # 
 # } 
 
-``` 
 
 
-
-
-```{r}
+## --------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 sampling_data <- function(data, y_col_name, sample_perc){
   data$label= data[, y_col_name]
@@ -243,12 +215,9 @@ sampling_data <- function(data, y_col_name, sample_perc){
   return(result)
 }
 
-```
 
 
-
-Normalizing train and test using train 's parameters 
-```{r}
+## --------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # normalizing <- function(x=None, Xtrain=None){
 #   na_mask = is.na(x)
 #   mean = apply(Xtrain, 2, mean, na.rm=TRUE)
@@ -270,14 +239,9 @@ Normalizing train and test using train 's parameters
 #   reconstrc = sweep(mult, 2, mean, '+')
 #   return (reconstrc)
 # } 
-```
 
 
-
-
-# FULL PIPELINE ON FULL DATASET MNIST: 
-
-```{r}
+## --------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # mnistDataPreparation <- function(
 #     width_del_percent=None, 
 #     height_del_percent=None, 
@@ -336,11 +300,9 @@ Normalizing train and test using train 's parameters
 #   return(result) 
 # }
 
-```
 
 
-
-```{r}
+## --------------------------------------------------------------------------------------------------------------------------------------------------------------------
 imputationPipeline<- function(
     width_del_percent=None,
     height_del_percent=None,
@@ -448,29 +410,28 @@ imputationPipeline<- function(
   print(duration_KNN)
   
   #---------------------------------------------------------------------------------------------------------------  
-  # print("start dimv")
-  # START = Sys.time()
-  # result_knn = impDi_run(
-  #   as.matrix(missing.X_train_normed),
-  #   as.vector(y_train)$label,
-  #   as.matrix(missing.X_test_normed),
-  #   as.vector(y_test)$label
-  # )
-  # impDiTime = Sys.time() - START
-  # print(impDiTime)
+  print("start dimv")
+  START = Sys.time()
+  result_knn = impDi_run(
+    as.matrix(missing.X_train_normed),
+    as.vector(y_train)$label,
+    as.matrix(missing.X_test_normed),
+    as.vector(y_test)$label
+  )
+  impDiTime = Sys.time() - START
+  print(impDiTime)
 
 
   # imputed data
   write.table(result_knn$train, file.path(sub_path, 'train_knn.csv.gz'), row.names=FALSE)
   write.table(result_knn$test, file.path(sub_path, 'test_knn.csv.gz'), row.names=FALSE)
 }
-```
 
 
-```{r}
+## --------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
- width_height_percentages =c(.6,.5,.4)
+ width_height_percentages =c(.6)
  sample_deleted_percentages = c(.5)
  correlation_threshold =c(.1)
 
@@ -495,5 +456,4 @@ for (width_height_pc in width_height_percentages){
 }
 
 
-```
 

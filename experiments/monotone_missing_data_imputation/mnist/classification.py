@@ -13,14 +13,21 @@ from xgboost import XGBClassifier
 import json 
 from sklearn import metrics
 
-DATA_FOLDER = "data/mnist/imputed/v12"
+#from load_data import load_data
+
+DATA_FOLDER = "data/mnist/imputed/v13"
 ORI_DATA_FOLDER = "data/mnist/original"
-SAVED_FOLDER = 'v12_xgboost_gain' 
+SAVED_FOLDER = 'xgboost_gain_20230117' 
+
+def open_gzip_file(file_path):
+    f = open(file_path)
+    df = pd.read_table(f, header=0, sep=" ", dtype=np.float64, skiprows = 0)
+    return df 
 
 get_imputed_data_path = lambda train_or_test, sub_folder, algo: \
-        os.path.join(DATA_FOLDER, sub_folder, '{}_{}.csv'.format(train_or_test, algo))
+        os.path.join(DATA_FOLDER, sub_folder, '{}_{}.csv.gz'.format(train_or_test, algo))
 get_y_data_path = lambda train_or_test, sub_folder: \
-        os.path.join(DATA_FOLDER, sub_folder, 'y_{}.csv'.format(train_or_test))
+        os.path.join(DATA_FOLDER, sub_folder, 'y_{}.csv.gz'.format(train_or_test))
 
 def main(args): 
     '''
@@ -35,20 +42,32 @@ def main(args):
 
     algo_name = args.algo_name
 
-    folders =  os.listdir(DATA_FOLDER) 
+    folders =  [fd for fd in os.listdir(DATA_FOLDER) if fd.split('_')[1] == '10']
     #folders = ['threshold_50_deletedWidthHeightPc_5050_noImagePc_50']
-
+    print(folders) 
     for folder_name in folders:
         print(folder_name)
         data_path = os.path.join(DATA_FOLDER, folder_name)
         if os.path.isdir(data_path):
             ##--------------------------------
 
-            Xtrain = pd.read_csv(get_imputed_data_path("train", folder_name, algo_name)).to_numpy()
-            Xtest  = pd.read_csv(get_imputed_data_path("test" , folder_name, algo_name)).to_numpy()
+            Xtrain = open_gzip_file(
+                    get_imputed_data_path("train", folder_name, algo_name)
+                    ).to_numpy()
 
-            ytrain = pd.read_csv(get_y_data_path("train", folder_name)).to_numpy().ravel()
-            ytest  = pd.read_csv(get_y_data_path("test" , folder_name)).to_numpy().ravel()
+            Xtest  = open_gzip_file(
+                    get_imputed_data_path("test" , folder_name, algo_name)
+                    ).to_numpy()
+
+            ytrain = pd.read_csv(
+                    get_y_data_path("train", folder_name), 
+                    compression = "gzip"
+                    ).to_numpy().ravel()
+
+            ytest  = pd.read_csv(
+                    get_y_data_path("test" , folder_name), 
+                    compression = "gzip"
+                    ).to_numpy().ravel()
 
             ##--------------------------------
            # Xtrain = pd.read_csv(get_imputed_data_path("train", folder_name, algo_name)).to_numpy()[:5000, ]

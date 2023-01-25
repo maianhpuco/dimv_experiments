@@ -1,14 +1,14 @@
-## ----setup, include = FALSE------------------------------------------------------------------------------------------------------------------------------------------
+## ----setup, include = FALSE------------------------------------------------------------------------------------------------------------------------
 knitr::opts_chunk$set(cache = TRUE, echo=TRUE, eval = TRUE)
 
 
-## --------------------------------------------------------------------------------------------------------------------------------------------------------------------
+## --------------------------------------------------------------------------------------------------------------------------------------------------
 require(knitr)
 
 purl("imputation_knn.Rmd", output = 'imputation_knn.R')
 
 
-## --------------------------------------------------------------------------------------------------------------------------------------------------------------------
+## --------------------------------------------------------------------------------------------------------------------------------------------------
 
 packages <- c(
   "missMDA", 
@@ -42,7 +42,7 @@ plan(multisession, workers = 4)
 
 
 
-## --------------------------------------------------------------------------------------------------------------------------------------------------------------------
+## --------------------------------------------------------------------------------------------------------------------------------------------------
 #getting the path to save 
 # SETTING 
 curr_dir = getwd()
@@ -51,7 +51,7 @@ ROOT = '../../../data/mnist/imputed/'
 FILE_NAME = 'v13'
 
 
-## --------------------------------------------------------------------------------------------------------------------------------------------------------------------
+## --------------------------------------------------------------------------------------------------------------------------------------------------
 mnist_path = file.path(curr_dir, path) 
 print(mnist_path)
 
@@ -82,7 +82,7 @@ if (!file.exists(file.path(mnist_path, "train-images-idx3-ubyte")) |
   
 
 
-## --------------------------------------------------------------------------------------------------------------------------------------------------------------------
+## --------------------------------------------------------------------------------------------------------------------------------------------------
 # load image files
 load_image_file = function(filename) {
   ret = list()
@@ -108,7 +108,7 @@ load_label_file = function(filename) {
 
 
 
-## --------------------------------------------------------------------------------------------------------------------------------------------------------------------
+## --------------------------------------------------------------------------------------------------------------------------------------------------
 # load images
 processing_mnist_data <- function (){
   train = load_image_file(file.path(mnist_path, "train-images-idx3-ubyte"))
@@ -122,7 +122,7 @@ processing_mnist_data <- function (){
 }
 
 
-## --------------------------------------------------------------------------------------------------------------------------------------------------------------------
+## --------------------------------------------------------------------------------------------------------------------------------------------------
 processed_data = processing_mnist_data()
 train = processed_data$train 
 test = processed_data$test
@@ -132,7 +132,7 @@ y.train = train[, 785, drop=F]
 y.test = test[, 785, drop=F] 
 
 
-## --------------------------------------------------------------------------------------------------------------------------------------------------------------------
+## --------------------------------------------------------------------------------------------------------------------------------------------------
 # get_image_position_spatial_to_flatten<- function(delImgPosWidth, delImgPosHeight){ 
 #   # delImgPosHeight: row 
 #   # delImgPosWeight : col 
@@ -143,7 +143,7 @@ y.test = test[, 785, drop=F]
 # }
 
 
-## --------------------------------------------------------------------------------------------------------------------------------------------------------------------
+## --------------------------------------------------------------------------------------------------------------------------------------------------
 # image_edge_deleting <- function(
 #     data, 
 #     delete_type, #by_percent, by_pixel_number 
@@ -183,7 +183,7 @@ y.test = test[, 785, drop=F]
 
 
 
-## --------------------------------------------------------------------------------------------------------------------------------------------------------------------
+## --------------------------------------------------------------------------------------------------------------------------------------------------
 # visualize the deleted images 
 # visualize_digit <- function(missing_X, y, train_removed_rows, per_col, per_row, title){
 # 
@@ -201,7 +201,7 @@ y.test = test[, 785, drop=F]
 
 
 
-## --------------------------------------------------------------------------------------------------------------------------------------------------------------------
+## --------------------------------------------------------------------------------------------------------------------------------------------------
 
 sampling_data <- function(data, y_col_name, sample_perc){
   data$label= data[, y_col_name]
@@ -217,92 +217,92 @@ sampling_data <- function(data, y_col_name, sample_perc){
 
 
 
-## --------------------------------------------------------------------------------------------------------------------------------------------------------------------
-# normalizing <- function(x=None, Xtrain=None){
-#   na_mask = is.na(x)
-#   mean = apply(Xtrain, 2, mean, na.rm=TRUE)
-#   sd = apply(Xtrain, 2, sd, na.rm=TRUE)
-#   
-#   sd_equal_zero_mask = which(sd==0)
-#   subtract_mean = sweep(x, 2, mean, '-')
-#   X_normed = sweep(subtract_mean, 2, sd, "/")
-#   
-#   X_normed[is.na(X_normed)] = 0 
-#   X_normed[is.infinite(X_normed)] = 0 
-#   X_normed[na_mask] = NA 
-#   result = list('X_normed'=X_normed, 'mean'=mean, 'sd'=sd, 'sd_equal_zero_mask'=sd_equal_zero_mask)
-#   return (result) 
-# }
-# 
-# reconstructingNormedMatrix <- function(X_norm, mean, std){
-#   mult = sweep(X_norm, 2, std, '*')
-#   reconstrc = sweep(mult, 2, mean, '+')
-#   return (reconstrc)
-# } 
+## --------------------------------------------------------------------------------------------------------------------------------------------------
+normalizing <- function(x=None, Xtrain=None){
+  na_mask = is.na(x)
+  mean = apply(Xtrain, 2, mean, na.rm=TRUE)
+  sd = apply(Xtrain, 2, sd, na.rm=TRUE)
+
+  sd_equal_zero_mask = which(sd==0)
+  subtract_mean = sweep(x, 2, mean, '-')
+  X_normed = sweep(subtract_mean, 2, sd, "/")
+
+  X_normed[is.na(X_normed)] = 0
+  X_normed[is.infinite(X_normed)] = 0
+  X_normed[na_mask] = NA
+  result = list('X_normed'=X_normed, 'mean'=mean, 'sd'=sd, 'sd_equal_zero_mask'=sd_equal_zero_mask)
+  return (result)
+}
+
+reconstructingNormedMatrix <- function(X_norm, mean, std){
+  mult = sweep(X_norm, 2, std, '*')
+  reconstrc = sweep(mult, 2, mean, '+')
+  return (reconstrc)
+}
 
 
-## --------------------------------------------------------------------------------------------------------------------------------------------------------------------
+## --------------------------------------------------------------------------------------------------------------------------------------------------
 # mnistDataPreparation <- function(
-#     width_del_percent=None, 
-#     height_del_percent=None, 
-#     sample_deleted_percent=None, 
-#     X.train, 
-#     X.test, 
-#     y.train, 
+#     width_del_percent=None,
+#     height_del_percent=None,
+#     sample_deleted_percent=None,
+#     X.train,
+#     X.test,
+#     y.train,
 #     y.test
 #     ){
 #   X_train = as.matrix(X.train)
 #   X_test = as.matrix(X.test)
 #   y_train = as.matrix(y.train)
-#   y_test = as.matrix(y.test) 
-#   
-#   #cut a piece of image 
+#   y_test = as.matrix(y.test)
+# 
+#   #cut a piece of image
 #   removed_train = image_edge_deleting(
 #     X_train,
-#     'by_percent', 
-#     sample_deleted_percent, 28, 28, 
+#     'by_percent',
+#     sample_deleted_percent, 28, 28,
 #     width_del_percent=width_del_percent,
 #     height_del_percent=height_del_percent)
-#   
+# 
 #   removed_test= image_edge_deleting(
 #     X_test,
-#     'by_percent', 
+#     'by_percent',
 #     sample_deleted_percent, 28,28,
 #     width_del_percent=width_del_percent,
-#     height_del_percent=height_del_percent)  
-#   
+#     height_del_percent=height_del_percent)
+# 
 #   train_removed_rows = removed_train$flatten_rows_removed
 #   test_removed_rows = removed_test$flatten_rows_removed
-#   train_removed_columns = removed_train$flatten_columns_removed 
-#   test_removed_columns = removed_test$flatten_columns_removed 
-#   
+#   train_removed_columns = removed_train$flatten_columns_removed
+#   test_removed_columns = removed_test$flatten_columns_removed
+# 
 #   missing.X_train = removed_train$missing_data
-#   missing.X_test =  removed_test$missing_data  
-#   # normalization 
+#   missing.X_test =  removed_test$missing_data
+#   # normalization
 #   train_normed = normalizing(x=missing.X_train,Xtrain=missing.X_train)
 #   missing.X_train_normed = train_normed$X_normed
 #   missing.X_train_mean = train_normed$mean
-#   missing.X_train_sd = train_normed$sd 
-#   
+#   missing.X_train_sd = train_normed$sd
+# 
 #   test_normed = normalizing(x=missing.X_test, Xtrain=missing.X_train)
 #   missing.X_test_normed = test_normed$X_normed
-#   
+# 
 #   result = list(
 #     "missing.X_train_normed" = missing.X_train_normed,
-#     "y_train" = y_train, 
-#     "missing.X_test_normed" = missing.X_test_normed, 
-#     "y_test" = y_test, 
-#     "train_removed_rows" = train_removed_rows, 
-#     "test_removed_rows" = test_removed_rows, 
-#     "missing.X_train_mean" = missing.X_train_mean, 
-#     "missing.X_train_sd" = missing.X_train_sd 
+#     "y_train" = y_train,
+#     "missing.X_test_normed" = missing.X_test_normed,
+#     "y_test" = y_test,
+#     "train_removed_rows" = train_removed_rows,
+#     "test_removed_rows" = test_removed_rows,
+#     "missing.X_train_mean" = missing.X_train_mean,
+#     "missing.X_train_sd" = missing.X_train_sd
 #   )
-#   return(result) 
+#   return(result)
 # }
 
 
 
-## --------------------------------------------------------------------------------------------------------------------------------------------------------------------
+## --------------------------------------------------------------------------------------------------------------------------------------------------
 imputationPipeline<- function(
     width_del_percent=None,
     height_del_percent=None,
@@ -379,15 +379,15 @@ imputationPipeline<- function(
   path.X_train_normed = file.path(sub_path, 'X_train_normed.csv.gz')
   path.X_test_normed  = file.path(sub_path, 'X_test_normed.csv.gz') 
           
-  path.X_train_mean = file.path(sub_path, 'X_train_mean.csv.gz')
-  path.X_train_sd = file.path(sub_path, 'X_train_sd.csv.gz')
-  
+  # path.X_train_mean = file.path(sub_path, 'X_train_mean.csv.gz')
+  # path.X_train_sd = file.path(sub_path, 'X_train_sd.csv.gz')
+  # 
   
   missing.X_train_normed = as.matrix(read.table(path.X_train_normed, sep=' ', header=TRUE))
   missing.X_test_normed  = as.matrix(read.table(path.X_test_normed, sep=' ', header=TRUE)) 
-  missing.X_train_mean   = as.matrix(read.table(path.X_train_mean, sep=' ', header=TRUE)) 
-  missing.X_train_sd     = as.matrix(read.table(path.X_train_sd, sep=' ', header=TRUE)) 
-  
+  # missing.X_train_mean   = as.matrix(read.table(path.X_train_mean, sep=' ', header=TRUE)) 
+  # missing.X_train_sd     = as.matrix(read.table(path.X_train_sd, sep=' ', header=TRUE)) 
+  # 
  # test_removed_rows = as.vector(read.csv(file.path(sub_path, 'test_removed_rows.csv')))$test_removed_rows
   print("check dim")
   print(dim(missing.X_train_normed))
@@ -410,16 +410,16 @@ imputationPipeline<- function(
   print(duration_KNN)
   
   #---------------------------------------------------------------------------------------------------------------  
-  print("start dimv")
-  START = Sys.time()
-  result_knn = impDi_run(
-    as.matrix(missing.X_train_normed),
-    as.vector(y_train)$label,
-    as.matrix(missing.X_test_normed),
-    as.vector(y_test)$label
-  )
-  impDiTime = Sys.time() - START
-  print(impDiTime)
+  # print("start dimv")
+  # START = Sys.time()
+  # result_knn = impDi_run(
+  #   as.matrix(missing.X_train_normed),
+  #   as.vector(y_train)$label,
+  #   as.matrix(missing.X_test_normed),
+  #   as.vector(y_test)$label
+  # )
+  # impDiTime = Sys.time() - START
+  # print(impDiTime)
 
 
   # imputed data
@@ -428,10 +428,10 @@ imputationPipeline<- function(
 }
 
 
-## --------------------------------------------------------------------------------------------------------------------------------------------------------------------
+## --------------------------------------------------------------------------------------------------------------------------------------------------
 
 
- width_height_percentages =c(.6)
+ width_height_percentages =c(.5)
  sample_deleted_percentages = c(.5)
  correlation_threshold =c(.1)
 

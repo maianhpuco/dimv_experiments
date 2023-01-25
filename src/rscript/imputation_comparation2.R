@@ -22,7 +22,7 @@ if (any(installed_packages == FALSE)) {
 # Packages loading
 invisible(lapply(packages, library, character.only = TRUE)) 
 library(here)
-source(here('src/rscript/dimv.R'))  
+source(here('src/rscript/dimv2.R'))  
 source(here('src/rscript/dpers.R'))   
 source(here('src/rscript/utils.R'))
 

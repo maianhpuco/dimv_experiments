@@ -9,7 +9,7 @@ import pandas as pd
 import json 
 from datetime import datetime 
 
-DATA_FOLDER = "data/mnist/imputed/v12"
+DATA_FOLDER = "data/mnist/imputed/v13"
 ORI_DATA_FOLDER = "data/mnist/original"
 
 def get_normalization_parameters(X_train_ori, X_train_normed_missing):

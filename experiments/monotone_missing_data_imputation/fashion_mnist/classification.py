@@ -44,7 +44,6 @@ def main(args):
 
     folders =  [fd for fd in os.listdir(DATA_FOLDER) if fd.split('_')[1] == '10']
     print(folders)
-    folders = ['threshold_10_deletedWidthHeightPc_4040_noImagePc_50']
     for folder_name in folders:
         print(folder_name)
         data_path = os.path.join(DATA_FOLDER, folder_name)

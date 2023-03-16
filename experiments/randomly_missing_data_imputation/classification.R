@@ -1,25 +1,15 @@
----
-title: "classification_experiement_v9 - implement DIMVf"
-output:
-  pdf_document: default
-  html_document: default
-date: "2022-09-30"
----
-
-
-```{r setup, include = FALSE}
+## ----setup, include = FALSE--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 knitr::opts_chunk$set(cache = TRUE, echo=TRUE, eval = TRUE)
-``` 
 
 
-```{r}
+## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 require(knitr)
 purl("classification.Rmd", output = 'classification.R')
-```
 
-```{r}
 
-DATASETS = c("yeast")#c("wine_quality", "soybean", "ecoli")
+## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+DATASETS = c("yeast", "iris", "new_thyroid")#c("wine_quality", "soybean", "ecoli")
 
 FUNC_LIST = list( 
           'impDi'
@@ -32,19 +22,18 @@ FUNC_LIST = list(
           # "GINN"
 )   
          
-```
 
-```{r}
+
+## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 MISSING_RATE_LIST = c(.5,.4,.3,.2,.1) 
-```
 
-```{r}
+
+## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 root = "../../data/randomly_missing_dataset/svmRadial_20230120"
 NUM_FOLDS = 5
-```
- 
 
-```{r}
+
+## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 packages <- c(
   "missMDA", 
   "softImpute", 
@@ -85,13 +74,9 @@ source(here('src/rscript/imputation_comparation2.R'))
 plan(multisession, workers = 8)
 library(doParallel)
 registerDoParallel(cores=8) 
-```
 
 
-
-
-
-```{r}
+## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 #1
 #DATASETS = c("iris","ionosphere", "seeds", "wine","new_thyroid", "letter", "spam")
@@ -119,11 +104,9 @@ registerDoParallel(cores=8)
 #DATASETS = c("iris", "breast_tissue", "new_thyroid", "breast_cancer_wisconsin")
 #DATASETS = c("iris", "breast_tissue", "parkinsons", "new_thyroid", "breast_cancer_wisconsin")
 #DATASETS = c("iris") 
-```
 
 
-
-```{r}
+## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # path = "../../data/randomly_missing_dataset/svmRadial_20230118/iris/missing_rate_50_threshold_10/1/imputed_train_impDi.csv"
 # test_path = "../../data/randomly_missing_dataset/svmRadial_20230118/iris/missing_rate_50_threshold_10/1/imputed_test_impDi.csv"
 # X =read.csv(path)[-1]
@@ -175,13 +158,9 @@ registerDoParallel(cores=8)
 #         ) 
 # rmse_test
 
-```
 
 
-
-
-
-```{r}
+## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 CalcEachFold <- function(
     fold, 
     folds, 
@@ -315,20 +294,9 @@ CalcEachFold <- function(
 
 }
         
-```
 
 
-
-# ```{r}
-# tr = "../../data/randomly_missing_dataset/svmRadial_20230118/new_thyroid/missing_rate_50_threshold_10/4/imputed_train_Gain.csv"
-# t =  "../../data/randomly_missing_dataset/svmRadial_20230118/new_thyroid/missing_rate_50_threshold_10/5/imputed_test_Gain.csv"
-# tr_df = read.csv(tr)
-# tr_df
-# ```
-
-
-
-```{r}
+## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 CalcPipeline <- function(
     
     root, 
@@ -366,11 +334,9 @@ CalcPipeline <- function(
 
 }
 }
-```
 
 
-
-```{r}
+## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 curr_dir = getwd()
 if (dir.exists(file.path(root)) == F){
@@ -411,9 +377,9 @@ for (DIMV_THRESHOLD in DIMV_THRESHOLD_LIST){
 }
 
 
-```
 
-```{r}
+
+## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # train_p = "../../data/randomly_missing_dataset/svmRadial_20230118/yeast/missing_rate_00_threshold_10/2/missing_X_train_normed.csv"
 # test_p  = "../../data/randomly_missing_dataset/svmRadial_20230118/yeast/missing_rate_00_threshold_10/2/missing_X_test_normed.csv"
 # 
@@ -439,11 +405,9 @@ for (DIMV_THRESHOLD in DIMV_THRESHOLD_LIST){
 # print(y.test)
 # acc = mean(pred == y.test)
 # print(acc) 
-```
 
 
-
-```{r}
+## ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # train_p = "../../data/randomly_missing_dataset/svmRadial_20230118/iris/missing_rate_10_threshold_10/1/missing_X_train_normed.csv"
 # test_p  = "../../data/randomly_missing_dataset/svmRadial_20230118/iris/missing_rate_10_threshold_10/1/missing_X_test_normed.csv"
 # train = as.matrix(read.csv(train_p)) 
@@ -453,4 +417,4 @@ for (DIMV_THRESHOLD in DIMV_THRESHOLD_LIST){
 # 
 #         y.train =  as.factor(as.numeric(factor(y.train)))   
 #         y.test =  as.factor(as.numeric(factor(y.test)))   
-``` 
+

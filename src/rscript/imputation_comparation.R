@@ -8,7 +8,8 @@ packages <- c(
   "mice", 
   "missForest", 
   "caret", 
-  "future"
+  "future",
+  "missMethods"
 )
 
 
@@ -138,3 +139,14 @@ missForest_run <- function(X.train, y.train, X.test, y.test){
   result = list("train" =  X_imp.train[, ],  "test" = X_imp.test[, ])
   return(result)
 } 
+
+EM_run = function(X.train, y.train, X.test, y.test) {
+
+	X_train_imp = impute_EM(X.train);
+	X_test_imp	= impute_EM(X.test);
+
+	return(list(
+				"train" = X_train_imp,
+				"test" = X_test_imp
+	))
+}

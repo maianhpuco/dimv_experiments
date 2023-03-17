@@ -55,7 +55,7 @@ def main():
     print(Xtrain.shape, ytrain.shape, Xtest.shape, ytest.shape)
     #create missing data 
     results = []
-    for missing_rate in [.5]:#[0.1, 0.2, 0.3, 0.4]:
+    for missing_rate in [0.1, 0.2, 0.3, 0.4, .5]:
         print("-------")
         print("missing_rate", missing_rate)
 

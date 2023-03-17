@@ -56,7 +56,7 @@ def main():
     
     results = []
     #create missing data 
-    for missing_rate in [.5, .1, .2, .3, .4]:
+    for missing_rate in [.1, .2, .3, .4, .5, .6, .7,.8, .9]:        
         print("------")
         print("missing rate", missing_rate)
 
@@ -70,7 +70,7 @@ def main():
         print(mus.shape)
         print(std.shape)
         #saving Xcaled, mus, std 
-        duration_path = 'data/dpers_vs_dper/'
+        duration_path = 'data/dpers_vs_dper/rebuttal/'
         if (os.path.isdir(duration_path)==0):
             os.mkdir(duration_path) 
 
@@ -86,14 +86,14 @@ def main():
     now_string = now.strftime("%Y%m%d-%H:%M:%S")
 
      
-    
-    with open(duration_path+"dpers_{}.json".format(now_string), "w") as f:
+    file_path = duration_path+"dpers_{}.json".format(now_string) 
+    print("file_path: ", file_path)
+    with open(file_path, "w") as f:
         json.dump(results, f)
 
     print("complete Covariance Matrix with DPERS after with result {}".format(results))
 
 if __name__=='__main__':
-    parser = argparse.ArgumentParser()
     main()
             
 

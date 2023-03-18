@@ -4,5 +4,5 @@ build:
 run:
 	docker run -it									\
 		--cpus			'1.0'						\
-		--memory		'8G'						\
+		--memory		'6G'						\
 		docker-template-app

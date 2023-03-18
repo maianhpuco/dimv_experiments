@@ -1,0 +1,39 @@
+[1] "Dataset:"
+[1] "iris"
+[1] "-------------------------"
+[1] 150
+[1] 4
+            Royston test for Multivariate Normality 
+
+  data : ds$X 
+
+  R               : 50.3738 
+  p-value         : 3.133482e-11 
+
+  Result  : Data are not multivariate normal (sig.level = 0.05) 
+[1] "Dataset:"
+[1] "yeast"
+[1] "-------------------------"
+[1] 1484
+[1] 8
+            Royston test for Multivariate Normality 
+
+  data : ds$X 
+
+  R               : 1241.633 
+  p-value         : 0 
+
+  Result  : Data are not multivariate normal (sig.level = 0.05) 
+[1] "Dataset:"
+[1] "new_thyroid"
+[1] "-------------------------"
+[1] 215
+[1] 5
+            Royston test for Multivariate Normality 
+
+  data : ds$X 
+
+  R               : 315.3187 
+  p-value         : 0 
+
+  Result  : Data are not multivariate normal (sig.level = 0.05) 

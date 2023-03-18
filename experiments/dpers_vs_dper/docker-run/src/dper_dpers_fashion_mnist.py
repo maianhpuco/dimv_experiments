@@ -25,7 +25,7 @@ import json
 
 #from utils import timeit, rmse_loss 
 from dpers import dpers 
-from dper import dper 
+from dperv2 import dper 
 from load_data import load_data
 
 
@@ -50,9 +50,9 @@ def randomly_missing(datasource, perc):
     flattenX[:, mask] = float("NaN")    
     return flattenX.reshape(h, w) 
  
-def dpers_run():
+def dpers_run(Xtrain, ytrain, Xtest, ytest):
     print("run dpers")
-    duration_path = 'data/dpers_vs_dper/'
+    duration_path = '../data/dpers_vs_dper/'
     if (os.path.isdir(duration_path)==0):
         os.mkdir(duration_path)
 
@@ -73,11 +73,6 @@ def dpers_run():
         print(X_missing_scaled.shape)
         print(mus.shape)
         print(std.shape)
-        #saving Xcaled, mus, std 
-        duration_path = 'data/dpers_vs_dper/'
-        if (os.path.isdir(duration_path)==0):
-            os.mkdir(duration_path) 
-
         start = time.time() 
         #calc sigma 
         sigma = dpers(X_missing_scaled[:,:])
@@ -101,7 +96,7 @@ def dpers_run():
 
 def dper_run(Xtrain, ytrain, Xtest, ytest):
     print("run dper")
-    duration_path = 'data/dpers_vs_dper/'
+    duration_path = '../data/dpers_vs_dper/'
     if (os.path.isdir(duration_path)==0):
         os.mkdir(duration_path) 
     print(Xtrain.shape, ytrain.shape, Xtest.shape, ytest.shape)
@@ -116,7 +111,6 @@ def dper_run(Xtrain, ytrain, Xtest, ytest):
         num_classes = np.unique(y).shape[0]
     
         print(X_missing.shape)
-        print(y)
         print(num_classes)
         #pd.DataFrame(X_missing).to_csv(missing_data_path, header=False, index=False)
             

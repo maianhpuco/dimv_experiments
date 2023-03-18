@@ -50,9 +50,12 @@ def randomly_missing(datasource, perc):
     flattenX[:, mask] = float("NaN")    
     return flattenX.reshape(h, w) 
  
-def dpers():
+def dpers_run():
     print("run dpers")
-    Xtrain, ytrain, Xtest, ytest = load_data(dataset_name="fashion_mnist")
+    duration_path = 'data/dpers_vs_dper/'
+    if (os.path.isdir(duration_path)==0):
+        os.mkdir(duration_path)
+
     print(Xtrain.shape, ytrain.shape, Xtest.shape, ytest.shape)
     
     results = []
@@ -91,12 +94,16 @@ def dpers():
     
     with open(duration_path+"dpers_ablation_{}.json".format(now_string), "w") as f:
         json.dump(results, f)
+        print("complete saving data")
 
     print("complete Covariance Matrix with DPERS after with result {}".format(results))
 
 
-def dper():
-    Xtrain, ytrain, Xtest, ytest = load_data(dataset_name="fashion_mnist")
+def dper_run(Xtrain, ytrain, Xtest, ytest):
+    print("run dper")
+    duration_path = 'data/dpers_vs_dper/'
+    if (os.path.isdir(duration_path)==0):
+        os.mkdir(duration_path) 
     print(Xtrain.shape, ytrain.shape, Xtest.shape, ytest.shape)
     #create missing data 
     results = []
@@ -118,9 +125,7 @@ def dper():
     #    pd.DataFrame(X_missing_scaled).to_csv(scaled_data_path, header=False, index=False) 
     #    pd.DataFrame(mus).to_csv(mus_path, header=False, index=False)
     #    pd.DataFrame(std).to_csv(std_path, header=False, index=False)
-        duration_path = 'data/dpers_vs_dper/'
-        if (os.path.isdir(duration_path)==0):
-            os.mkdir(duration_path) 
+
     
         start = time.time() 
         #calc sigma 
@@ -137,16 +142,15 @@ def dper():
     print("file_path: ", file_path)
     with open(file_path, "w") as f:
         json.dump(results, f)
+        print("complete saving data")
     print("complete Covariance Matrix with DPER after hours with results {} ".format(results))
 
 
 if __name__=='__main__':
-    parser = argparse.ArgumentParser()
-    dpers()
-    dper()
 
-
-
-
+    Xtrain, ytrain, Xtest, ytest = load_data(dataset_name="fashion_mnist")
+ 
+    dpers_run(Xtrain, ytrain, Xtest, ytest )
+    dper_run(Xtrain, ytrain, Xtest, ytest ) 
 
             

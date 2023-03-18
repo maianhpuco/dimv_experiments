@@ -172,8 +172,8 @@ MeanImp_run = function(X_train, y_train, X_test, y_test) {
 	X_bind_imp = impute_mean(X_bind);
 
 	# Impute test data with train's mean
-	X_train_imp = head(X_bind, n=n_train);
-	X_test_imp	= tail(X_bind, n=n_test);
+	X_train_imp = head(X_bind_imp, n=n_train);
+	X_test_imp	= tail(X_bind_imp, n=n_test);
 
 	return(list(
 				"train"	: X_train_imp,

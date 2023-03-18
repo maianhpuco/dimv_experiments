@@ -15,7 +15,15 @@ get_mnist = function(){
     close(f);
 
 	X = matrix(X, ncol=nrow*ncol, byrow=T);
-	return (X[1:1000,]);
+	
+	#Subseting 
+	X = X[1:1000,];
+
+	# count unique
+	n_unique = apply(X, 2, function(x) {length(unique(x))});
+	X = X[, n_unique > 1]
+
+	return(X);
 }
 
 
@@ -30,7 +38,13 @@ get_fashion_mnist = function(){
     close(f);
 
 	X = matrix(X, ncol=nrow*ncol, byrow=T);
-	return (X[1:1000,]);
+	
+	#Subseting 
+	X = X[1:1000,];
+
+	# count unique
+	n_unique = apply(X, 2, function(x) {length(unique(x))});
+	X = X[, n_unique > 1]
 }
 
 get_ds = function(ds) {
@@ -89,8 +103,6 @@ main =  function(ds_name) {
 	print("Dataset:");
 	print(ds_name);
 	print("-------------------------");
-	print(nrow(ds$X));
-	print(ncol(ds$X));
 	print(R.test(ds$X));
 }
 

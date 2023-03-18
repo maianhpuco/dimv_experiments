@@ -1,11 +1,11 @@
-all: norm_test 
-	cat norm_test.log
+all: download_mnist download_fashion_mnist unzip norm_test
 
 norm_test:
 	./norm_test.R iris >> norm_test.log
 	./norm_test.R yeast >> norm_test.log
 	./norm_test.R new_thyroid >> norm_test.log
-
+	./norm_test.R mnist >> norm_test.log
+	./norm_test.R fashion_mnist >> norm_test.log 
 
 
 download_mnist:

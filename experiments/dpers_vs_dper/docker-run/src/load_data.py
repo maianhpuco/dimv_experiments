@@ -6,6 +6,7 @@ import argparse
 from urllib.request import urlretrieve
 
 def load_data(dataset_name):
+    root = '../data'
     '''
     Args: 
     - dataset_name: ['fashion_mnist', 'mnist']
@@ -26,11 +27,11 @@ def load_data(dataset_name):
         't10k-images-idx3-ubyte.gz',
         't10k-labels-idx1-ubyte.gz']
 
-    if (os.path.isdir('data') == 0):
-        os.mkdir('data')
-    if (os.path.isdir('data/{}'.format(dataset_name)) == 0):
-        os.mkdir('data/{}'.format(dataset_name))
-    data_path = 'data/{}/raw/'.format(dataset_name)
+    if (os.path.isdir(root) == 0):
+        os.mkdir(root)
+    if (os.path.isdir(root + '/{}'.format(dataset_name)) == 0):
+        os.mkdir(root + '/{}'.format(dataset_name))
+    data_path = root+'/{}/raw/'.format(dataset_name)
     if (os.path.isdir(data_path) == 0):
         os.mkdir(data_path)
     print(data_path) 

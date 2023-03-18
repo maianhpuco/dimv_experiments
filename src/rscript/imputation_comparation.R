@@ -140,13 +140,22 @@ missForest_run <- function(X.train, y.train, X.test, y.test){
   return(result)
 } 
 
-EM_run = function(X.train, y.train, X.test, y.test) {
 
-	X_train_imp = impute_EM(X.train);
-	X_test_imp	= impute_EM(X.test);
+EM_run = function(X_train, y_train, X_test, y_test){
 
-	return(list(
-				"train" = X_train_imp,
-				"test" = X_test_imp
-	))
-}
+	n_train = nrow(X_train);
+	n_test = nrow(X_test);
+
+	# Combining 2 dataset
+	X_cmb = rbind(X_train, X_test);
+
+	# Impute this
+	X_cmb_imp = impute_EM(X_cmb);
+
+	# Impute dataset using EM imputation
+	X_train_imp = head(X_cmb_imp, n = n_train); 
+	X_test_imp = tail(X_cmb_imp, n = n_test); 
+
+	return( list("train" = X_train_imp,
+				"test" = X_test_imp) )
+

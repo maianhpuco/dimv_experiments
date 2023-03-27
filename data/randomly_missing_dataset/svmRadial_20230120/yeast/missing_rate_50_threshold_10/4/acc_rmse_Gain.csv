@@ -1,0 +1,2 @@
+"","dataset","fold_number","X.Gain.","accuracy","rmse_train","rmse_test"
+"1","yeast",4,"Gain",0.33445945945946,0.106476011632007,0.127495570778268

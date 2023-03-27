@@ -1,0 +1,2 @@
+"","dataset","fold_number","X.EM.","accuracy","rmse_train","rmse_test"
+"1","yeast",1,"EM",0.481481481481481,0.129602246366636,0.130912243990051

@@ -1,0 +1,2 @@
+"","dataset","fold_number","X.kNNimpute.","accuracy","rmse_train","rmse_test"
+"1","iris",1,"kNNimpute",0.8,0.923148628244936,0.848653501705759

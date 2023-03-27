@@ -1,0 +1,2 @@
+"","dataset","fold_number","X.missForest.","accuracy","rmse_train","rmse_test"
+"1","new_thyroid",3,"missForest",0.930232558139535,7.27522348397773,5.0059179574877

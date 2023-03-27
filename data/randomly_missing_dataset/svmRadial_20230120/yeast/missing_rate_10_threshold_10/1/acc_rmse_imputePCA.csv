@@ -1,0 +1,2 @@
+"","dataset","fold_number","X.imputePCA.","accuracy","rmse_train","rmse_test"
+"1","yeast",1,"imputePCA",0.599326599326599,0.0921311530408289,0.0834893171359407

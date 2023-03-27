@@ -1,0 +1,2 @@
+"","dataset","fold_number","X.impDi.","accuracy","rmse_train","rmse_test"
+"1","yeast",2,"impDi",0.575757575757576,0.0885531377927471,0.0850656856484102

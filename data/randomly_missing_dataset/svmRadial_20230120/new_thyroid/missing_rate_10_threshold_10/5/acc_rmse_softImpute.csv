@@ -1,0 +1,2 @@
+"","dataset","fold_number","X.softImpute.","accuracy","rmse_train","rmse_test"
+"1","new_thyroid",5,"softImpute",0.86046511627907,11.5039385458661,5.92776786785707

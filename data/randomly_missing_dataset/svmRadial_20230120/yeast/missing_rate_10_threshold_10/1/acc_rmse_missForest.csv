@@ -1,0 +1,2 @@
+"","dataset","fold_number","X.missForest.","accuracy","rmse_train","rmse_test"
+"1","yeast",1,"missForest",0.585858585858586,0.0899172598706416,0.0711679884231641

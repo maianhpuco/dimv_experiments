@@ -153,6 +153,7 @@ ecoli_conf                   = list("name" = "ecoli", "label_col" = "V9")
 
 # Dataset list
 ```{r}
+DATASETS = c("new_thyroid", "iris", "yeast")
 #DATASETS = c("iris", "ionosphere", "seeds", "wine", "breast_tissue", "parkinsons", "new_thyroid", "breast_cancer_wisconsin")
 ```
 
@@ -356,7 +357,6 @@ splittingAndSavingFolds <- function(
 
 
 ```{r}
-#root = "../../data/randomly_missing_dataset/svmRadial_20230118"
 root = "../../data/randomly_missing_dataset/svmRadial_20230120"
 curr_dir = getwd()
 if (dir.exists(file.path(root)) == F){
@@ -364,19 +364,8 @@ if (dir.exists(file.path(root)) == F){
 }else{
   print('Root exists')
 }
-# DATASETS = c("new_thyroid", "spam", "yeast")
-DATASETS = c("new_thyroid")
-# DATASETS =c("letter", "spam", "iris", "ionosphere", "seeds", "wine","breast_tissue", "new_thyroid", "breast_cancer_wisconsin" )
-# DATASETS = c("iris")
+
 NUM_FOLDS = 5 
-
-# DATASETS = c("yeast", "lymphography")
-# #DATASETS ="lymphography"
-# DATASETS =c("iris","yeast", "lymphography")
-# DATASETS = c("glass")
-# DATASETS = c("iris") 
-# DATASETS = c("wisconsin")
-
 
 DIMV_THRESHOLD_LIST = c(.1)
 MISSING_RATE_LIST = c(.5, .4,.3,.2,.1)

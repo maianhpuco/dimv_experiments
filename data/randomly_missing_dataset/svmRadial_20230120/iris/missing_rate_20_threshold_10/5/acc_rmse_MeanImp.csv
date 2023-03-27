@@ -1,0 +1,2 @@
+"","dataset","fold_number","X.MeanImp.","accuracy","rmse_train","rmse_test"
+"1","iris",5,"MeanImp",0.966666666666667,1.17708822955461,1.01329082655807

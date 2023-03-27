@@ -1,0 +1,2 @@
+"","dataset","fold_number","X.EM.","accuracy","rmse_train","rmse_test"
+"1","new_thyroid",3,"EM",0.697674418604651,10.2939997535113,11.2949695971508

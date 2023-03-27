@@ -1,0 +1,2 @@
+"","dataset","fold_number","X.mice.","accuracy","rmse_train","rmse_test"
+"1","iris",1,"mice",0.933333333333333,0.609688797754663,0.620565903684957

@@ -91,7 +91,7 @@ imputePCA_run <-function(X.train, y.train, X.test, y.test){
   #b) on testing set 
   missing <- is.na(X.test) 
   X_imp.test = X.test
-  X_imp.test[missing] = 0 #initialize missing with 0  
+  X_imp.test[missing] = 0 
   test_pca <- predict(pca , newdata = X_imp.test)
   test_pca_reconstructed <-  t(t(test_pca %*% t(pca$rotation)) * pca$scale + pca$center)   
   X_imp.test[missing]=test_pca_reconstructed[missing]
@@ -176,7 +176,7 @@ MeanImp_run = function(X_train, y_train, X_test, y_test) {
 	X_test_imp	= impute_mean(X_test);
 
 	return(list(
-				"train"	: X_train_imp,
-				"test"	: X_test_imp
+				"train"	= X_train_imp,
+				"test"	= X_test_imp
 	));
 };

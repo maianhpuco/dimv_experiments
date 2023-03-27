@@ -1,0 +1,2 @@
+"","dataset","fold_number","X.impDi.","accuracy","rmse_train","rmse_test"
+"1","new_thyroid",2,"impDi",0.837209302325581,7.09662170804488,9.86760278540238

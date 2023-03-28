@@ -1,0 +1,2 @@
+"","dataset","fold_number","X.imputePCA.","accuracy","rmse_train","rmse_test"
+"1","new_thyroid",4,"imputePCA",0.906976744186046,6.7341705358433,6.73985494528097

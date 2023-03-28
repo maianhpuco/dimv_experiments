@@ -1,0 +1,2 @@
+"","dataset","fold_number","X.kNNimpute.","accuracy","rmse_train","rmse_test"
+"1","ionosphere",3,"kNNimpute",0.771428571428571,0.781096286369217,0.856474857538147

@@ -1,0 +1,2 @@
+"","dataset","fold_number","X.EM.","accuracy","rmse_train","rmse_test"
+"1","wine",5,"EM",0.777777777777778,96.009476334825,87.5373659550414

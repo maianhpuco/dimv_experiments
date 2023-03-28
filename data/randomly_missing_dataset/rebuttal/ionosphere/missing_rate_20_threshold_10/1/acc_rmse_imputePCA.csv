@@ -1,0 +1,2 @@
+"","dataset","fold_number","X.imputePCA.","accuracy","rmse_train","rmse_test"
+"1","ionosphere",1,"imputePCA",0.942857142857143,0.4140044384812,0.43163302617745

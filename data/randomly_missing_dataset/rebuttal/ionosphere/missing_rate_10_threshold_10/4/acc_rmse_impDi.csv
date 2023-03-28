@@ -1,0 +1,2 @@
+"","dataset","fold_number","X.impDi.","accuracy","rmse_train","rmse_test"
+"1","ionosphere",4,"impDi",0.957142857142857,0.433241133724213,0.442057685773523

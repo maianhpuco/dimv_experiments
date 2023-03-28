@@ -1,0 +1,2 @@
+"","dataset","fold_number","X.EM.","accuracy","rmse_train","rmse_test"
+"1","ionosphere",4,"EM",0.785714285714286,499.191479487992,482.53360783216

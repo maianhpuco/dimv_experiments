@@ -1,0 +1,2 @@
+"","dataset","fold_number","X.softImpute.","accuracy","rmse_train","rmse_test"
+"1","ionosphere",1,"softImpute",0.928571428571429,0.440838069124361,0.47844926864824

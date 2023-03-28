@@ -1,0 +1,2 @@
+"","dataset","fold_number","X.softImpute.","accuracy","rmse_train","rmse_test"
+"1","digits_train",3,"softImpute",0.87303664921466,3.92593559622438,4.63140876850905

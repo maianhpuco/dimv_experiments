@@ -1,0 +1,2 @@
+"","dataset","fold_number","X.kNNimpute.","accuracy","rmse_train","rmse_test"
+"1","new_thyroid",1,"kNNimpute",0.930232558139535,10.3114103267608,9.67890489673283

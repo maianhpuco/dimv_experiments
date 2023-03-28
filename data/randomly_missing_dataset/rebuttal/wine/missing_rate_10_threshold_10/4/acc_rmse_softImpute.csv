@@ -1,0 +1,2 @@
+"","dataset","fold_number","X.softImpute.","accuracy","rmse_train","rmse_test"
+"1","wine",4,"softImpute",0.972222222222222,81.4934562594454,56.2583051718833

@@ -1,0 +1,2 @@
+"","dataset","fold_number","X.imputePCA.","accuracy","rmse_train","rmse_test"
+"1","seeds",5,"imputePCA",0.80952380952381,0.593070104390687,0.87863063311071

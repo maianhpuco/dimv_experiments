@@ -1,0 +1,2 @@
+"","dataset","fold_number","X.imputePCA.","accuracy","rmse_train","rmse_test"
+"1","wine",1,"imputePCA",0.944444444444444,67.0600161017137,68.5008912713426

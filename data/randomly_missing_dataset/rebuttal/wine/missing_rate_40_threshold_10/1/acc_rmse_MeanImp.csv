@@ -1,0 +1,2 @@
+"","dataset","fold_number","X.MeanImp.","accuracy","rmse_train","rmse_test"
+"1","wine",1,"MeanImp",0.942857142857143,90.8196528245716,105.030610785802

@@ -1,0 +1,2 @@
+"","dataset","fold_number","X.softImpute.","accuracy","rmse_train","rmse_test"
+"1","yeast",2,"softImpute",0.565656565656566,0.105023455371425,0.254330183768818

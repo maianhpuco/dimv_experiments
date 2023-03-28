@@ -1,0 +1,2 @@
+"","dataset","fold_number","X.missForest.","accuracy","rmse_train","rmse_test"
+"1","ionosphere",5,"missForest",0.901408450704225,0.38937367870336,0.353353981139042

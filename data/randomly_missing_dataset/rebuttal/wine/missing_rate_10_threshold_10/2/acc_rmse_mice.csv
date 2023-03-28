@@ -1,0 +1,2 @@
+"","dataset","fold_number","X.mice.","accuracy","rmse_train","rmse_test"
+"1","wine",2,"mice",0.942857142857143,84.2057372388365,113.194115607644

@@ -1,0 +1,2 @@
+"","dataset","fold_number","X.impDi.","accuracy","rmse_train","rmse_test"
+"1","wine",3,"impDi",0.971428571428571,64.2131098975798,71.1476330898416

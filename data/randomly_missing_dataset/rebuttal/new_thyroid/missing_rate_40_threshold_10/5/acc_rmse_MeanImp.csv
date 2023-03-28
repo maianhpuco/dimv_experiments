@@ -1,0 +1,2 @@
+"","dataset","fold_number","X.MeanImp.","accuracy","rmse_train","rmse_test"
+"1","new_thyroid",5,"MeanImp",0.883720930232558,8.23417633811175,6.66918795430649

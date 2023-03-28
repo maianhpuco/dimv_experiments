@@ -1,0 +1,2 @@
+"","dataset","fold_number","X.MeanImp.","accuracy","rmse_train","rmse_test"
+"1","yeast",1,"MeanImp",0.417508417508417,0.103205802494143,0.10381019863002

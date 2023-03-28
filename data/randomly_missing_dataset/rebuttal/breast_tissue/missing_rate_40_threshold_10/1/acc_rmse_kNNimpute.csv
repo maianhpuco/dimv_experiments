@@ -1,0 +1,2 @@
+"","dataset","fold_number","X.kNNimpute.","accuracy","rmse_train","rmse_test"
+"1","breast_tissue",1,"kNNimpute",0.318181818181818,3499.53151253118,4415.97874348415

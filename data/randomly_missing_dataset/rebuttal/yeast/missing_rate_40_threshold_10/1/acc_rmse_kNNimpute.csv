@@ -1,0 +1,2 @@
+"","dataset","fold_number","X.kNNimpute.","accuracy","rmse_train","rmse_test"
+"1","yeast",1,"kNNimpute",0.410774410774411,0.128932272770598,0.128090041859348

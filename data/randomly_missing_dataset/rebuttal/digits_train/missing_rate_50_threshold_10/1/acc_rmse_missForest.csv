@@ -1,0 +1,2 @@
+"","dataset","fold_number","X.missForest.","accuracy","rmse_train","rmse_test"
+"1","digits_train",1,"missForest",0.93848167539267,2.47138903714989,2.43601150494325

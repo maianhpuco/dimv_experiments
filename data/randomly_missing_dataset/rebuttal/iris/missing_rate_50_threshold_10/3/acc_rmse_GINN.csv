@@ -1,0 +1,2 @@
+"","dataset","fold_number","X.GINN.","accuracy","rmse_train","rmse_test"
+"1","iris",3,"GINN",0.8,1.03322854518101,0.765454809256718

@@ -1,0 +1,2 @@
+"","dataset","fold_number","X.Gain.","accuracy","rmse_train","rmse_test"
+"1","iris",4,"Gain",1,0.51522805495777,0.398905855930747

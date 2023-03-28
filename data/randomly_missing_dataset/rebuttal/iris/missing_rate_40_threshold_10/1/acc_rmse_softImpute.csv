@@ -1,0 +1,2 @@
+"","dataset","fold_number","X.softImpute.","accuracy","rmse_train","rmse_test"
+"1","iris",1,"softImpute",0.8,0.626294005632415,0.867070542175792

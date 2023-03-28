@@ -1,0 +1,2 @@
+"","dataset","fold_number","X.kNNimpute.","accuracy","rmse_train","rmse_test"
+"1","seeds",5,"kNNimpute",0.785714285714286,2.15760823883315,0.955416580345976

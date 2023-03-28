@@ -1,0 +1,2 @@
+"","dataset","fold_number","X.softImpute.","accuracy","rmse_train","rmse_test"
+"1","breast_tissue",3,"softImpute",0.473684210526316,1004.94989107301,6127.15763445233

@@ -1,0 +1,2 @@
+"","dataset","fold_number","X.missForest.","accuracy","rmse_train","rmse_test"
+"1","wine",1,"missForest",0.972222222222222,56.4974439343748,67.9711229249952

@@ -1,0 +1,2 @@
+"","dataset","fold_number","X.kNNimpute.","accuracy","rmse_train","rmse_test"
+"1","wine",5,"kNNimpute",0.888888888888889,119.60405493825,149.079692753605

@@ -1,0 +1,2 @@
+"","dataset","fold_number","X.mice.","accuracy","rmse_train","rmse_test"
+"1","seeds",1,"mice",0.833333333333333,0.70263162253482,0.665695387199975

@@ -1,0 +1,2 @@
+"","dataset","fold_number","X.EM.","accuracy","rmse_train","rmse_test"
+"1","digits_train",3,"EM",0.56151832460733,1963.32603091212,1937.43013659022

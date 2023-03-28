@@ -1,0 +1,2 @@
+"","dataset","fold_number","X.MeanImp.","accuracy","rmse_train","rmse_test"
+"1","ionosphere",3,"MeanImp",0.942857142857143,0.536073823468483,0.535208368153542

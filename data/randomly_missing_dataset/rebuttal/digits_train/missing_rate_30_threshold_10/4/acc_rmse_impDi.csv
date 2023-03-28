@@ -1,0 +1,2 @@
+"","dataset","fold_number","X.impDi.","accuracy","rmse_train","rmse_test"
+"1","digits_train",4,"impDi",0.963350785340314,2.73549527146849,2.71542132418877

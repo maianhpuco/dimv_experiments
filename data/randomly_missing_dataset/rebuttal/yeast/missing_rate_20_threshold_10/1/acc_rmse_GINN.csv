@@ -1,0 +1,2 @@
+"","dataset","fold_number","X.GINN.","accuracy","rmse_train","rmse_test"
+"1","yeast",1,"GINN",0.523648648648649,0.103855329780837,0.109219136426767

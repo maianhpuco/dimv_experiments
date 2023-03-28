@@ -1,0 +1,2 @@
+"","dataset","fold_number","X.mice.","accuracy","rmse_train","rmse_test"
+"1","ionosphere",4,"mice",0.971428571428571,0.552731107506273,0.57381092831849
